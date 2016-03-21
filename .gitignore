@@ -3,7 +3,7 @@ build/
 bin/waifu2x-caffe
 bin/*log*
 bin/*.FATAL
-bin/miku_small.png
+bin/*.png
 bin/**/*.caffemodel
 bin/**/*.protobin
 caffe
