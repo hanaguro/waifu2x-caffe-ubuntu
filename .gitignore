@@ -1,0 +1,8 @@
+*~
+build/
+bin/waifu2x-caffe
+bin/*log*
+bin/*.FATAL
+bin/miku_small.png
+caffe
+libcaffe

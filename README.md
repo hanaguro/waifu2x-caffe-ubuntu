@@ -1,4 +1,9 @@
-﻿waifu2x-caffe (for Windows)
+﻿# waifu2x-caffe (for Ubuntu)
+
+waifu2x-caffe for Ubuntu. It's adapted from https://github.com/onishy/Waifu2x-Caffe-Linux .
+See `INSTALL-linux.md`.
+
+waifu2x-caffe (for Windows)
 ----------
 
  制作者 : lltcggie
