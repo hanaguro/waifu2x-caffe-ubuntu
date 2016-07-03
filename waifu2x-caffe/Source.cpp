@@ -52,7 +52,7 @@ boost::filesystem::path relativePath(const boost::filesystem::path &path, const 
 
 int main(int argc, char** argv)
 {
-	Waifu2x::init_liblary();
+	Waifu2x::init_liblary(argc, argv);
 
 	// Caffeのエラーでないログを保存しないようにする
 	google::SetLogDestination(google::INFO, "");
@@ -93,6 +93,7 @@ int main(int argc, char** argv)
 	std::vector<int> cmdNRLConstraintV;
 	cmdNRLConstraintV.push_back(1);
 	cmdNRLConstraintV.push_back(2);
+	cmdNRLConstraintV.push_back(3);
 	TCLAP::ValuesConstraint<int> cmdNRLConstraint(cmdNRLConstraintV);
 	TCLAP::ValueArg<int> cmdNRLevel("n", "noise_level", "noise reduction level",
 		false, 1, &cmdNRLConstraint, cmd);
@@ -133,6 +134,10 @@ int main(int argc, char** argv)
 	TCLAP::ValueArg<int> cmdBatchSizeFile("b", "batch_size",
 		"input batch size", false,
 		1, "int", cmd);
+
+	TCLAP::ValueArg<int> cmdGPUNoFile("", "gpu",
+		"gpu device no", false,
+		0, "int", cmd);
 
 	std::vector<int> cmdTTAConstraintV;
 	cmdTTAConstraintV.push_back(0);
@@ -185,6 +190,8 @@ int main(int argc, char** argv)
 	if (outputExt.length() > 0 && outputExt[0] != '.')
 		outputExt = "." + outputExt;
 
+	const std::string ModelName = Waifu2x::GetModelName(cmdModelPath.getValue());
+
 	const bool use_tta = cmdTTALevel.getValue() == 1;
 
 	std::vector<std::pair<std::string, std::string>> file_paths;
@@ -196,11 +203,17 @@ int main(int argc, char** argv)
 		{
 			// 「test」なら「test_noise_scale(Level1)(x2.000000)」みたいな感じにする
 
-			std::string addstr("_" + cmdMode.getValue());
+			std::string addstr("(");
+			addstr += ModelName;
+			addstr += ")";
 
 			const std::string &mode = cmdMode.getValue();
+
+			addstr += "(" + mode + ")";
+
 			if (mode.find("noise") != mode.npos || mode.find("auto_scale") != mode.npos)
 				addstr += "(Level" + std::to_string(cmdNRLevel.getValue()) + ")";
+
 			if (use_tta)
 				addstr += "(tta)";
 			if (mode.find("scale") != mode.npos)
@@ -212,6 +225,9 @@ int main(int argc, char** argv)
 				else
 					addstr += "(height " + std::to_string(*ScaleHeight) + ")";
 			}
+
+			if (cmdOutputDepth.getValue() != 8)
+				addstr += "(" + std::to_string(cmdOutputDepth.getValue()) + "bit)";
 
 			output_path = input_path.branch_path() / (input_path.stem().string() + addstr);
 		}
@@ -300,25 +316,52 @@ int main(int argc, char** argv)
 			outputFileName = cmdInputFile.getValue();
 			const auto tailDot = outputFileName.find_last_of('.');
 			outputFileName.erase(tailDot, outputFileName.length());
-			outputFileName = outputFileName + "(" + cmdMode.getValue() + ")";
-			std::string &mode = cmdMode.getValue();
+
+			std::string addstr("(");
+			addstr += ModelName;
+			addstr += ")";
+
+			const std::string &mode = cmdMode.getValue();
+
+			addstr += "(" + mode + ")";
+
 			if (mode.find("noise") != mode.npos || mode.find("auto_scale") != mode.npos)
-				outputFileName = outputFileName + "(Level" + std::to_string(cmdNRLevel.getValue()) + ")";
+				addstr += "(Level" + std::to_string(cmdNRLevel.getValue()) + ")";
+
 			if (use_tta)
-				outputFileName += "(tta)";
+				addstr += "(tta)";
 			if (mode.find("scale") != mode.npos)
-				outputFileName = outputFileName + "(x" + std::to_string(cmdScaleRatio.getValue()) + ")";
-			outputFileName += outputExt;
+			{
+				if (ScaleRatio)
+					addstr += "(x" + std::to_string(*ScaleRatio) + ")";
+				else if (ScaleWidth)
+					addstr += "(width " + std::to_string(*ScaleWidth) + ")";
+				else
+					addstr += "(height " + std::to_string(*ScaleHeight) + ")";
+			}
+
+			if (cmdOutputDepth.getValue() != 8)
+				addstr += "(" + std::to_string(cmdOutputDepth.getValue()) + "bit)";
+
+			outputFileName += addstr + outputExt;
 		}
 
 		file_paths.emplace_back(cmdInputFile.getValue(), outputFileName);
 	}
 
+	Waifu2x::eWaifu2xModelType mode;
+	if (cmdMode.getValue() == "noise")
+		mode = Waifu2x::eWaifu2xModelTypeNoise;
+	else if (cmdMode.getValue() == "scale")
+		mode = Waifu2x::eWaifu2xModelTypeScale;
+	else if (cmdMode.getValue() == "noise_scale")
+		mode = Waifu2x::eWaifu2xModelTypeNoiseScale;
+	else if (cmdMode.getValue() == "auto_scale")
+		mode = Waifu2x::eWaifu2xModelTypeAutoScale;
+
 	Waifu2x::eWaifu2xError ret;
 	Waifu2x w;
-	ret = w.init(argc, argv, cmdMode.getValue(), cmdNRLevel.getValue(), ScaleRatio, ScaleWidth, ScaleHeight, cmdModelPath.getValue(), cmdProcess.getValue(),
-		cmdOutputQuality.getValue() == -1 ? boost::optional<int>() : cmdOutputQuality.getValue(), cmdOutputDepth.getValue(), use_tta, cmdCropSizeFile.getValue(),
-		cmdBatchSizeFile.getValue());
+	ret = w.Init(mode, cmdNRLevel.getValue(), cmdModelPath.getValue(), cmdProcess.getValue(), cmdGPUNoFile.getValue());
 	switch (ret)
 	{
 	case Waifu2x::eWaifu2xError_InvalidParameter:
@@ -338,7 +381,9 @@ int main(int argc, char** argv)
 	bool isError = false;
 	for (const auto &p : file_paths)
 	{
-		const Waifu2x::eWaifu2xError ret = w.waifu2x(p.first, p.second);
+		const Waifu2x::eWaifu2xError ret = w.waifu2x(p.first, p.second, ScaleRatio, ScaleWidth, ScaleHeight, nullptr,
+			cmdCropSizeFile.getValue(), cmdCropSizeFile.getValue(),
+			cmdOutputQuality.getValue() == -1 ? boost::optional<int>() : cmdOutputQuality.getValue(), cmdOutputDepth.getValue(), use_tta, cmdBatchSizeFile.getValue());
 		if (ret != Waifu2x::eWaifu2xError_OK)
 		{
 			switch (ret)
