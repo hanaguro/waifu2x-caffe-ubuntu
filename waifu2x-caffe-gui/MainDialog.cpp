@@ -20,6 +20,7 @@
 #include "CControl.h"
 //#include <boost/program_options.hpp>
 #include <tclapw/CmdLine.h>
+#include <glog/logging.h>
 
 
 const size_t AR_PATH_MAX(1024);
@@ -36,6 +37,9 @@ const TCHAR * const LangListFileName = TEXT("lang/LangList.txt");
 const TCHAR * const MultiFileStr = TEXT("(Multi File)");
 
 const UINT_PTR nIDEventTimeLeft = 1000;
+
+LangStringList DialogEvent::langStringList;
+HWND DialogEvent::dh;
 
 
 namespace
@@ -301,8 +305,8 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 		switch (cur)
 		{
 		case 0:
-		model_dir = TEXT("models/anime_style_art_rgb");
-		modelType = eModelTypeRGB;
+			model_dir = TEXT("models/anime_style_art_rgb");
+			modelType = eModelTypeRGB;
 			break;
 
 		case 1:
@@ -316,13 +320,18 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 			break;
 
 		case 3:
-		model_dir = TEXT("models/anime_style_art");
-		modelType = eModelTypeY;
+			model_dir = TEXT("models/upconv_7_photo");
+			modelType = eModelTypeUpConvPhoto;
+			break;
+
+		case 4:
+			model_dir = TEXT("models/anime_style_art");
+			modelType = eModelTypeY;
 			break;
 
 		default:
 			break;
-	}
+		}
 	}
 
 	{
@@ -1187,7 +1196,7 @@ UINT_PTR DialogEvent::OFNHookProcOut(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARA
 	return 0L;
 }
 
-DialogEvent::DialogEvent() : dh(nullptr), mode(Waifu2x::eWaifu2xModelTypeNoiseScale), modeStr("noise_scale"), noise_level(1), scale_ratio(2.0), scale_width(0), scale_height(0), model_dir(TEXT("models/anime_style_art_rgb")),
+DialogEvent::DialogEvent() : mode(Waifu2x::eWaifu2xModelTypeNoiseScale), modeStr("noise_scale"), noise_level(1), scale_ratio(2.0), scale_width(0), scale_height(0), model_dir(TEXT("models/anime_style_art_rgb")),
 process("gpu"), outputExt(TEXT(".png")), inputFileExt(TEXT("png:jpg:jpeg:tif:tiff:bmp:tga")),
 use_tta(false), output_depth(8), crop_size(128), batch_size(1), gpu_no(0), isLastError(false), scaleType(eScaleTypeEnd),
 TimeLeftThread(-1), TimeLeftGetTimeThread(0), isCommandLineStart(false), tAutoMode(TEXT("none")),
@@ -1469,6 +1478,7 @@ void DialogEvent::SetWindowTextLang()
 	SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(L"IDC_RADIO_MODEL_RGB").c_str());
 	SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(L"IDC_RADIO_MODEL_PHOTO").c_str());
 	SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(L"IDC_RADIO_MODEL_UPCONV_RGB").c_str());
+	SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(L"IDC_RADIO_MODEL_UPCONV_PHOTO").c_str());
 	SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(L"IDC_RADIO_MODEL_Y").c_str());
 
 	SendMessage(GetDlgItem(dh, IDC_COMBO_MODEL), CB_SETCURSEL, cur, 0);
@@ -1619,6 +1629,9 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 
 		SendMessage(hlang, CB_SETCURSEL, defaultListIndex, 0);
 	}
+
+	// 致命的エラーが発生した時にLogFatalFuncを呼び出すようにする
+	google::InstallFailureFunction(LogFatalFunc);
 
 	SetWindowTextLang();
 
@@ -1871,8 +1884,10 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		index = 1;
 	else if (modelType == eModelTypeUpConvRGB)
 		index = 2;
-	else
+	else if (modelType == eModelTypeUpConvPhoto)
 		index = 3;
+	else
+		index = 4;
 
 	SendMessage(GetDlgItem(dh, IDC_COMBO_MODEL), CB_SETCURSEL, index, 0);
 
@@ -2026,6 +2041,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 			cmdModelTypeConstraintV.push_back(L"anime_style_art_rgb");
 			cmdModelTypeConstraintV.push_back(L"photo");
 			cmdModelTypeConstraintV.push_back(L"upconv_7_anime_style_art_rgb");
+			cmdModelTypeConstraintV.push_back(L"upconv_7_photo");
 			cmdModelTypeConstraintV.push_back(L"anime_style_art_y");
 			TCLAP::ValuesConstraint<std::wstring> cmdModelTypeConstraint(cmdModelTypeConstraintV);
 			TCLAP::ValueArg<std::wstring> cmdModelType(L"y", L"model_type", L"model type",
@@ -2251,10 +2267,14 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 						index = 0;
 					else if (cmdModelType.getValue() == L"photo")
 						index = 1;
-					else if (cmdModelType.getValue() == L"anime_style_art_y")
+					else if (cmdModelType.getValue() == L"upconv_7_anime_style_art_rgb")
 						index = 2;
-					else
+					else if (cmdModelType.getValue() == L"upconv_7_photo")
 						index = 3;
+					else if (cmdModelType.getValue() == L"anime_style_art_y")
+						index = 4;
+					else
+						index = 4;
 
 					SendMessage(GetDlgItem(dh, IDC_COMBO_MODEL), CB_SETCURSEL, index, 0);
 
@@ -3106,4 +3126,10 @@ void DialogEvent::AppSetting(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpD
 			output_dir = tOutputDirFix;
 		}
 	}
+}
+
+void DialogEvent::LogFatalFunc()
+{
+	MessageBox(dh, langStringList.GetString(L"MessageLogFatalError").c_str(), langStringList.GetString(L"MessageTitleError").c_str(), MB_OK | MB_ICONERROR);
+	abort();
 }

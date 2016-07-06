@@ -11,7 +11,7 @@
 #include <opencv2/core.hpp>
 
 #define CUDNN_DLL_NAME "cudnn64_5.dll"
-#define CUDNN_REQUIRE_VERION_TEXT "v5 RC"
+#define CUDNN_REQUIRE_VERION_TEXT "v5.1 RC"
 
 
 namespace caffe
@@ -99,6 +99,12 @@ private:
 
 	static double CalcScaleRatio(const boost::optional<double> scale_ratio, const boost::optional<int> scale_width, const boost::optional<int> scale_height,
 		const stImage &image);
+
+	static int GetcuDNNAlgorithm(const char *layer_name, int num_input, int num_output, int batch_size,
+		int width, int height, int kernel_w, int kernel_h, int pad_w, int pad_h, int stride_w, int stride_h);
+
+	static void SetcuDNNAlgorithm(int algo, const char *layer_name, int num_input, int num_output, int batch_size,
+		int width, int height, int kernel_w, int kernel_h, int pad_w, int pad_h, int stride_w, int stride_h);
 
 	Waifu2x::eWaifu2xError ReconstructImage(const double factor, const int crop_w, const int crop_h, const bool use_tta, const int batch_size, 
 		const bool isReconstructNoise, const bool isReconstructScale, const Waifu2x::waifu2xCancelFunc cancel_func, stImage &image);
