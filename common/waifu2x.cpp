@@ -5,6 +5,7 @@
 #include <cudnn.h>
 #include <mutex>
 #include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
 #include <tclap/CmdLine.h>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
@@ -318,12 +319,19 @@ private:
 
 		fclose(fp);
 
-		CcuDNNAlgorithmElement elm;
-		msgpack::unpack(sbuf.data(), sbuf.size()).get().convert(elm);
-		sbuf.clear();
+		try
+		{
+			CcuDNNAlgorithmElement elm;
+			msgpack::unpack(sbuf.data(), sbuf.size()).get().convert(elm);
+			sbuf.clear();
 
-		const uint64_t key = InfoToKey(kernel_w, kernel_h, pad_w, pad_h, stride_w, stride_h, batch_size);
-		mAlgoEmlMap[key] = std::move(elm);
+			const uint64_t key = InfoToKey(kernel_w, kernel_h, pad_w, pad_h, stride_w, stride_h, batch_size);
+			mAlgoEmlMap[key] = std::move(elm);
+		}
+		catch (...)
+		{
+			boost::filesystem::remove(SavePath);
+		}
 
 		return true;
 	}
@@ -373,22 +381,27 @@ public:
 			auto &eml = p.second;
 			if (eml.IsModefy())
 			{
-				msgpack::sbuffer sbuf;
-				msgpack::pack(sbuf, eml);
-
-				uint8_t kernel_w, kernel_h, pad_w, pad_h, stride_w, stride_h;
-				uint16_t batch_size;
-				eml.GetLayerData(kernel_w, kernel_h, pad_w, pad_h, stride_w, stride_h, batch_size);
-
-				const std::string SavePath = GetDataPath(kernel_w, kernel_h, pad_w, pad_h, stride_w, stride_h, batch_size);
-				FILE *fp = fopen(SavePath.c_str(), "wb");
-				if (fp)
+				try
 				{
-					fwrite(sbuf.data(), 1, sbuf.size(), fp);
-					fclose(fp);
+					msgpack::sbuffer sbuf;
+					msgpack::pack(sbuf, eml);
 
-					eml.Saved();
+					uint8_t kernel_w, kernel_h, pad_w, pad_h, stride_w, stride_h;
+					uint16_t batch_size;
+					eml.GetLayerData(kernel_w, kernel_h, pad_w, pad_h, stride_w, stride_h, batch_size);
+
+					const std::string SavePath = GetDataPath(kernel_w, kernel_h, pad_w, pad_h, stride_w, stride_h, batch_size);
+					FILE *fp = fopen(SavePath.c_str(), "wb");
+					if (fp)
+					{
+						fwrite(sbuf.data(), 1, sbuf.size(), fp);
+						fclose(fp);
+
+						eml.Saved();
+					}
 				}
+				catch(...)
+				{}
 			}
 		}
 	}
@@ -509,8 +522,14 @@ void Waifu2x::quit_liblary()
 {
 	g_ConvCcuDNNAlgorithm.Save();
 	g_DeconvCcuDNNAlgorithm.Save();
+
+	//caffe::GlobalFinalize();
 }
 
+void Waifu2x::quit_thread_liblary()
+{
+	//caffe::ThreadFinalize();
+}
 
 Waifu2x::Waifu2x() : mIsInited(false), mNoiseLevel(0), mIsCuda(false), mOutputBlock(nullptr), mOutputBlockSize(0), mGPUNo(0)
 {}
@@ -549,42 +568,62 @@ Waifu2x::eWaifu2xError Waifu2x::Init(const eWaifu2xModelType mode, const int noi
 
 		const auto cuDNNCheckEndTime = std::chrono::system_clock::now();
 
-		boost::filesystem::path exe_dir_path(ExeDir);
-		if (exe_dir_path.is_absolute())
-			exe_dir_path = exe_dir_path.branch_path();
-
-		if (Process == "cudnn" && boost::filesystem::exists(exe_dir_path))
+		if (Process == "cudnn")
 		{
-			const boost::filesystem::path cudnn_data_dir_path(exe_dir_path / "cudnn_data");
+			// exeのディレクトリにcuDNNのアルゴリズムデータ保存
+			boost::filesystem::path cudnn_data_base_dir_path(ExeDir);
+			if (cudnn_data_base_dir_path.is_relative())
+				cudnn_data_base_dir_path = boost::filesystem::system_complete(cudnn_data_base_dir_path);
 
-			bool isOK = false;
-			if (boost::filesystem::exists(cudnn_data_dir_path))
-				isOK = true;
+			if (!boost::filesystem::is_directory(cudnn_data_base_dir_path))
+				cudnn_data_base_dir_path = cudnn_data_base_dir_path.branch_path();
 
-			if (!isOK)
+			if (!boost::filesystem::exists(cudnn_data_base_dir_path))
 			{
-				boost::system::error_code error;
-				const bool result = boost::filesystem::create_directory(cudnn_data_dir_path, error);
-				if (result && !error)
-					isOK = true;
+				// exeのディレクトリが取得できなければカレントディレクトリに保存
+
+				cudnn_data_base_dir_path = boost::filesystem::current_path();
+
+				if (cudnn_data_base_dir_path.is_relative())
+					cudnn_data_base_dir_path = boost::filesystem::system_complete(cudnn_data_base_dir_path);
+
+				if (!boost::filesystem::exists(cudnn_data_base_dir_path))
+					cudnn_data_base_dir_path = "./";
 			}
 
-			if(isOK)
+			if (boost::filesystem::exists(cudnn_data_base_dir_path))
 			{
-				cudaDeviceProp prop;
-				if (cudaGetDeviceProperties(&prop, mGPUNo) == cudaSuccess)
+				const boost::filesystem::path cudnn_data_dir_path(cudnn_data_base_dir_path / "cudnn_data");
+
+				bool isOK = false;
+				if (boost::filesystem::exists(cudnn_data_dir_path))
+					isOK = true;
+
+				if (!isOK)
 				{
-					std::string conv_filename(prop.name);
-					conv_filename += " conv ";
+					boost::system::error_code error;
+					const bool result = boost::filesystem::create_directory(cudnn_data_dir_path, error);
+					if (result && !error)
+						isOK = true;
+				}
 
-					std::string deconv_filename(prop.name);
-					deconv_filename += " deconv ";
+				if (isOK)
+				{
+					cudaDeviceProp prop;
+					if (cudaGetDeviceProperties(&prop, mGPUNo) == cudaSuccess)
+					{
+						std::string conv_filename(prop.name);
+						conv_filename += " conv ";
 
-					const boost::filesystem::path conv_data_path = cudnn_data_dir_path / conv_filename;
-					const boost::filesystem::path deconv_data_path = cudnn_data_dir_path / deconv_filename;
+						std::string deconv_filename(prop.name);
+						deconv_filename += " deconv ";
 
-					g_ConvCcuDNNAlgorithm.SetDataPath(conv_data_path.string());
-					g_DeconvCcuDNNAlgorithm.SetDataPath(deconv_data_path.string());
+						const boost::filesystem::path conv_data_path = cudnn_data_dir_path / conv_filename;
+						const boost::filesystem::path deconv_data_path = cudnn_data_dir_path / deconv_filename;
+
+						g_ConvCcuDNNAlgorithm.SetDataPath(conv_data_path.string());
+						g_DeconvCcuDNNAlgorithm.SetDataPath(deconv_data_path.string());
+					}
 				}
 			}
 		}
@@ -758,6 +797,18 @@ Waifu2x::eWaifu2xError Waifu2x::waifu2x(const double factor, const void* source,
 	if (!mIsInited)
 		return Waifu2x::eWaifu2xError_NotInitialized;
 
+	int cvrSetting = -1;
+	if (in_channel == 3 && out_channel == 3)
+		cvrSetting = CV_BGR2RGB;
+	else if (in_channel == 4 && out_channel == 4)
+		cvrSetting = CV_BGRA2RGBA;
+	else if (in_channel == 3 && out_channel == 4)
+		cvrSetting = CV_BGR2RGBA;
+	else if (in_channel == 4 && out_channel == 3)
+		cvrSetting = CV_BGRA2RGB;
+	else if (!(in_channel == 1 && out_channel == 1))
+		return Waifu2x::eWaifu2xError_InvalidParameter;
+
 	stImage image;
 	ret = image.Load(source, width, height, in_channel, in_stride);
 	if (ret != Waifu2x::eWaifu2xError_OK)
@@ -779,8 +830,15 @@ Waifu2x::eWaifu2xError Waifu2x::waifu2x(const double factor, const void* source,
 
 	image.Postprocess(mInputPlane, Factor, 8);
 
-	cv::Mat out_image = image.GetEndImage();
+	cv::Mat out_bgr_image = image.GetEndImage();
 	image.Clear();
+
+	cv::Mat out_image;
+	if (cvrSetting >= 0)
+		cv::cvtColor(out_bgr_image, out_image, cvrSetting); // BGRからRGBに戻す
+	else
+		out_image = out_bgr_image;
+	out_bgr_image.release();
 
 	// 出力配列へ書き込み
 	{
@@ -803,7 +861,7 @@ double Waifu2x::CalcScaleRatio(const boost::optional<double> scale_ratio, const 
 		return image.GetScaleFromWidth(*scale_width);
 
 	if(scale_height)
-		return image.GetScaleFromWidth(*scale_height);
+		return image.GetScaleFromHeight(*scale_height);
 
 	return 1.0;
 }
@@ -811,7 +869,7 @@ double Waifu2x::CalcScaleRatio(const boost::optional<double> scale_ratio, const 
 int Waifu2x::GetcuDNNAlgorithm(const char * layer_name, int num_input, int num_output, int batch_size,
 	int width, int height, int kernel_w, int kernel_h, int pad_w, int pad_h, int stride_w, int stride_h)
 {
-	// ExeDir;
+	// g_ConvCcuDNNAlgorithmとg_DeconvCcuDNNAlgorithmが逆になってしまっているが、ファイル名にしか影響がないのと互換性がなくなるのでこのまま仕様とする
 	if (strcmp(layer_name, "Deconvolution") == 0)
 		return g_ConvCcuDNNAlgorithm.GetAlgorithm(num_input, num_output, batch_size, width, height, kernel_w, kernel_h, pad_w, pad_h, stride_w, stride_h);
 	else if (strcmp(layer_name, "Convolution") == 0)
@@ -823,6 +881,7 @@ int Waifu2x::GetcuDNNAlgorithm(const char * layer_name, int num_input, int num_o
 void Waifu2x::SetcuDNNAlgorithm(int algo, const char * layer_name, int num_input, int num_output, int batch_size,
 	int width, int height, int kernel_w, int kernel_h, int pad_w, int pad_h, int stride_w, int stride_h)
 {
+	// g_ConvCcuDNNAlgorithmとg_DeconvCcuDNNAlgorithmが逆になってしまっているが、ファイル名にしか影響がないのと互換性がなくなるのでこのまま仕様とする
 	if (strcmp(layer_name, "Deconvolution") == 0)
 		return g_ConvCcuDNNAlgorithm.SetAlgorithm(algo, num_input, num_output, batch_size, width, height, kernel_w, kernel_h, pad_w, pad_h, stride_w, stride_h);
 	else if (strcmp(layer_name, "Convolution") == 0)

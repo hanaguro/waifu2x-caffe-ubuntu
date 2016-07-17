@@ -223,7 +223,9 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 		modeStr = "auto_scale";
 	}
 
-	if (SendMessage(GetDlgItem(dh, IDC_RADIONOISE_LEVEL1), BM_GETCHECK, 0, 0))
+	if (SendMessage(GetDlgItem(dh, IDC_RADIONOISE_LEVEL0), BM_GETCHECK, 0, 0))
+		noise_level = 0;
+	else if (SendMessage(GetDlgItem(dh, IDC_RADIONOISE_LEVEL1), BM_GETCHECK, 0, 0))
 		noise_level = 1;
 	else if (SendMessage(GetDlgItem(dh, IDC_RADIONOISE_LEVEL2), BM_GETCHECK, 0, 0))
 		noise_level = 2;
@@ -422,6 +424,9 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 
 void DialogEvent::SetCropSizeList(const boost::filesystem::path & input_path)
 {
+	if (isSetInitCrop)
+		return;
+
 	HWND hcrop = GetDlgItem(dh, IDC_COMBO_CROP_SIZE);
 
 	int gcd = 1;
@@ -801,6 +806,8 @@ void DialogEvent::ProcessWaifu2x()
 			}
 		}
 
+		Waifu2x::quit_thread_liblary();
+
 		const auto ProcessEndTime = std::chrono::system_clock::now();
 
 		cuDNNCheckTime = cuDNNCheckEndTime - cuDNNCheckStartTime;
@@ -908,7 +915,7 @@ void DialogEvent::Waifu2xTime()
 void DialogEvent::SaveIni(const bool isSyncMember)
 {
 	if (isSyncMember)
-		SyncMember(true);
+		SyncMember(true, true);
 
 	if (isNotSaveParam)
 		return;
@@ -1080,7 +1087,6 @@ UINT_PTR DialogEvent::OFNHookProcIn(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
 		{
 		case CDN_SELCHANGE:
 		{
-			TCHAR szPath[AR_PATH_MAX] = TEXT("");
 			HWND hParent = GetParent(hdlg);
 
 			stFindParam param;
@@ -1102,16 +1108,40 @@ UINT_PTR DialogEvent::OFNHookProcIn(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
 
 				if (results.size() > 1)
 				{
-					TCHAR str[10000] = TEXT("");
+					const size_t addSize = 5000;
+					std::vector<TCHAR> str(10000);
+					str[0] = TEXT('\0');
+
+					size_t nlen = 0;
+					const auto funcC = [&nlen, &str, addSize](const TCHAR c)
+					{
+						while (str.size() <= nlen + 1 + 1)
+							str.resize(str.size() + addSize);
+
+						str.data()[nlen] = c;
+						nlen += 1;
+					};
+
+					const auto funcStr = [&nlen, &str, addSize](const tstring &s)
+					{
+						while (str.size() <= nlen + s.length() + 1)
+							str.resize(str.size() + addSize);
+
+						memcpy(str.data() + nlen, s.c_str(), sizeof(TCHAR) * s.length());
+						nlen += s.length();
+					};
 
 					for (const auto &p : results)
 					{
-						_tcscat_s(str, TEXT("\""));
-						_tcscat_s(str, p.c_str());
-						_tcscat_s(str, TEXT("\" "));
+						funcC(TEXT('\"'));
+						funcStr(p);
+						funcC(TEXT('\"'));
+						funcC(TEXT(' '));
 					}
 
-					CommDlg_OpenSave_SetControlText(hParent, edt1, str);
+					str[nlen] = TEXT('\0');
+
+					CommDlg_OpenSave_SetControlText(hParent, edt1, str.data());
 				}
 				else if(results.size() == 1)
 					CommDlg_OpenSave_SetControlText(hParent, edt1, results[0].c_str());
@@ -1196,11 +1226,11 @@ UINT_PTR DialogEvent::OFNHookProcOut(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARA
 	return 0L;
 }
 
-DialogEvent::DialogEvent() : mode(Waifu2x::eWaifu2xModelTypeNoiseScale), modeStr("noise_scale"), noise_level(1), scale_ratio(2.0), scale_width(0), scale_height(0), model_dir(TEXT("models/anime_style_art_rgb")),
+DialogEvent::DialogEvent() : mode(Waifu2x::eWaifu2xModelTypeNoiseScale), modeStr("noise_scale"), noise_level(0), scale_ratio(2.0), scale_width(0), scale_height(0), model_dir(TEXT("models/anime_style_art_rgb")),
 process("gpu"), outputExt(TEXT(".png")), inputFileExt(TEXT("png:jpg:jpeg:tif:tiff:bmp:tga")),
 use_tta(false), output_depth(8), crop_size(128), batch_size(1), gpu_no(0), isLastError(false), scaleType(eScaleTypeEnd),
 TimeLeftThread(-1), TimeLeftGetTimeThread(0), isCommandLineStart(false), tAutoMode(TEXT("none")),
-isArgStartAuto(true), isArgStartSuccessFinish(true), isOutputNoOverwrite(false), isNotSaveParam(false)
+isArgStartAuto(true), isArgStartSuccessFinish(true), isOutputNoOverwrite(false), isNotSaveParam(false), isSetInitCrop(false)
 {}
 
 void DialogEvent::Exec(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
@@ -1443,6 +1473,7 @@ void DialogEvent::SetWindowTextLang()
 	SET_WINDOW_TEXT(IDC_RADIO_MODE_NOISE);
 	SET_WINDOW_TEXT(IDC_RADIO_AUTO_SCALE);
 	SET_WINDOW_TEXT(IDC_STATIC_JPEG_NOISE_LEVEL);
+	SET_WINDOW_TEXT(IDC_RADIONOISE_LEVEL0);
 	SET_WINDOW_TEXT(IDC_RADIONOISE_LEVEL1);
 	SET_WINDOW_TEXT(IDC_RADIONOISE_LEVEL2);
 	SET_WINDOW_TEXT(IDC_RADIONOISE_LEVEL3);
@@ -1724,7 +1755,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		tmp[_countof(tmp) - 1] = TEXT('\0');
 		tmode = tmp;
 
-		noise_level = GetPrivateProfileInt(TEXT("Setting"), TEXT("LastNoiseLevel"), 1, getTString(SettingFilePath).c_str());
+		noise_level = GetPrivateProfileInt(TEXT("Setting"), TEXT("LastNoiseLevel"), 0, getTString(SettingFilePath).c_str());
 
 		GetPrivateProfileString(TEXT("Setting"), TEXT("LastProcess"), TEXT("gpu"), tmp, _countof(tmp), getTString(SettingFilePath).c_str());
 		tmp[_countof(tmp) - 1] = TEXT('\0');
@@ -1776,8 +1807,8 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 	if (outputExt.length() > 0 && outputExt[0] != TEXT('.'))
 		outputExt = L"." + outputExt;
 
-	if (!(1 <= noise_level && noise_level <= 3))
-		noise_level = 1;
+	if (!(0 <= noise_level && noise_level <= 3))
+		noise_level = 0;
 
 	if (tprcess == TEXT("gpu"))
 		process = "gpu";
@@ -1818,20 +1849,30 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), TRUE);
 	}
 
-	if (noise_level == 1)
+	if (noise_level == 0)
 	{
+		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL0), BM_SETCHECK, BST_CHECKED, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL1), BM_SETCHECK, BST_UNCHECKED, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL2), BM_SETCHECK, BST_UNCHECKED, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL3), BM_SETCHECK, BST_UNCHECKED, 0);
+	}
+	else if (noise_level == 1)
+	{
+		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL0), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL1), BM_SETCHECK, BST_CHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL2), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL3), BM_SETCHECK, BST_UNCHECKED, 0);
 	}
 	else if (noise_level == 2)
 	{
+		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL0), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL1), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL2), BM_SETCHECK, BST_CHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL3), BM_SETCHECK, BST_UNCHECKED, 0);
 	}
 	else
 	{
+		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL0), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL1), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL2), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL3), BM_SETCHECK, BST_CHECKED, 0);
@@ -1858,6 +1899,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		SendMessage(GetDlgItem(hWnd, IDC_RADIO_MODE_NOISE), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIO_AUTO_SCALE), BM_SETCHECK, BST_UNCHECKED, 0);
 
+		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL0), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL1), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL2), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL3), FALSE);
@@ -1973,12 +2015,13 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 				false, L"noise_scale", &cmdModeConstraint, cmd);
 
 			std::vector<int> cmdNRLConstraintV;
+			cmdNRLConstraintV.push_back(0);
 			cmdNRLConstraintV.push_back(1);
 			cmdNRLConstraintV.push_back(2);
 			cmdNRLConstraintV.push_back(3);
 			TCLAP::ValuesConstraint<int> cmdNRLConstraint(cmdNRLConstraintV);
 			TCLAP::ValueArg<int> cmdNRLevel(L"n", L"noise_level", L"noise reduction level",
-				false, 1, &cmdNRLConstraint, cmd);
+				false, 0, &cmdNRLConstraint, cmd);
 
 			TCLAP::ValueArg<double> cmdScaleRatio(L"s", L"scale_ratio",
 				L"custom scale ratio", false, 2.0, L"double", cmd);
@@ -2123,20 +2166,30 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 				{
 					const auto noise_level = cmdNRLevel.getValue();
 
-					if (noise_level == 1)
+					if (noise_level == 0)
 					{
+						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL0), BM_SETCHECK, BST_CHECKED, 0);
+						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL1), BM_SETCHECK, BST_UNCHECKED, 0);
+						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL2), BM_SETCHECK, BST_UNCHECKED, 0);
+						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL3), BM_SETCHECK, BST_UNCHECKED, 0);
+					}
+					else if (noise_level == 1)
+					{
+						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL0), BM_SETCHECK, BST_UNCHECKED, 0);
 						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL1), BM_SETCHECK, BST_CHECKED, 0);
 						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL2), BM_SETCHECK, BST_UNCHECKED, 0);
 						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL3), BM_SETCHECK, BST_UNCHECKED, 0);
 					}
 					else if (noise_level == 2)
 					{
+						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL0), BM_SETCHECK, BST_UNCHECKED, 0);
 						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL1), BM_SETCHECK, BST_UNCHECKED, 0);
 						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL2), BM_SETCHECK, BST_CHECKED, 0);
 						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL3), BM_SETCHECK, BST_UNCHECKED, 0);
 					}
 					else
 					{
+						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL0), BM_SETCHECK, BST_UNCHECKED, 0);
 						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL1), BM_SETCHECK, BST_UNCHECKED, 0);
 						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL2), BM_SETCHECK, BST_UNCHECKED, 0);
 						SendMessage(GetDlgItem(hWnd, IDC_RADIONOISE_LEVEL3), BM_SETCHECK, BST_CHECKED, 0);
@@ -2223,6 +2276,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 					SetWindowText(GetDlgItem(dh, IDC_COMBO_CROP_SIZE), to_tstring(cmdCropSizeFile.getValue()).c_str());
 
 					isSetParam = true;
+					isSetInitCrop = true;
 				}
 
 				if (cmdBatchSizeFile.isSet())
@@ -2319,6 +2373,8 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 
 		LocalFree(lplpszArgs);
 	}
+
+	isSetInitCrop = false;
 }
 
 void DialogEvent::Cancel(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
@@ -2360,12 +2416,14 @@ void DialogEvent::OnModeChange(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID l
 
 	if (isNoise)
 	{
+		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL0), TRUE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL1), TRUE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL2), TRUE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL3), TRUE);
 	}
 	else
 	{
+		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL0), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL1), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL2), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIONOISE_LEVEL3), FALSE);

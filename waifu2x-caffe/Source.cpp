@@ -91,12 +91,13 @@ int main(int argc, char** argv)
 		false, "noise_scale", &cmdModeConstraint, cmd);
 
 	std::vector<int> cmdNRLConstraintV;
+	cmdNRLConstraintV.push_back(0);
 	cmdNRLConstraintV.push_back(1);
 	cmdNRLConstraintV.push_back(2);
 	cmdNRLConstraintV.push_back(3);
 	TCLAP::ValuesConstraint<int> cmdNRLConstraint(cmdNRLConstraintV);
 	TCLAP::ValueArg<int> cmdNRLevel("n", "noise_level", "noise reduction level",
-		false, 1, &cmdNRLConstraint, cmd);
+		false, 0, &cmdNRLConstraint, cmd);
 
 	TCLAP::ValueArg<double> cmdScaleRatio("s", "scale_ratio",
 		"custom scale ratio", false, 2.0, "double", cmd);
