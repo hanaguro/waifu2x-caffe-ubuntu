@@ -1,6 +1,6 @@
 # Build on Ubuntu 16.04
 
-## Build caffe for waifu2x
+## Build caffe for waifu2x-caffe
 
 ```
 git clone -b waifu2x-caffe-ubuntu https://github.com/nagadomi/caffe.git ltcggie-caffe
