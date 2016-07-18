@@ -10,7 +10,7 @@ cp Makefile.config.example-ubuntu Makefile.config
 make
 ```
 
-## Build waiuf2x-caffe
+## Build waifu2x-caffe
 
 (I tested on Ubuntu16.04 + CUDA8.0 + CuDNN 5.0 + GTX 1080)
 
