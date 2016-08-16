@@ -1,6 +1,6 @@
 # Build on Ubuntu 16.04
 
-## Build caffe for waifu2x
+## Build caffe for waifu2x-caffe
 
 ```
 git clone -b waifu2x-caffe-ubuntu https://github.com/nagadomi/caffe.git lltcggie-caffe
@@ -10,7 +10,7 @@ cp Makefile.config.example-ubuntu Makefile.config
 make
 ```
 
-## Build waiuf2x-caffe
+## Build waifu2x-caffe
 
 (I tested on Ubuntu16.04 + CUDA8.0 + CuDNN 5.0 + GTX 1080)
 
