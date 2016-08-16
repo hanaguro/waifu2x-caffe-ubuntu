@@ -3,8 +3,8 @@
 ## Build caffe for waifu2x
 
 ```
-git clone -b waifu2x-caffe-ubuntu https://github.com/nagadomi/caffe.git ltcggie-caffe
-cd ltcggie-caffe
+git clone -b waifu2x-caffe-ubuntu https://github.com/nagadomi/caffe.git lltcggie-caffe
+cd lltcggie-caffe
 cp Makefile.config.example-ubuntu Makefile.config
 # edit Makefile.config
 make
@@ -20,8 +20,8 @@ cd waifu2x-caffe
 git submodule update --init --recursive
 
 # create symlink to ltcggie-caffe
-ln -s ../ltcggie-caffe ./caffe
-ln -s ../ltcggie-caffe ./libcaffe
+ln -s ../lltcggie-caffe ./caffe
+ln -s ../lltcggie-caffe ./libcaffe
 
 # build
 rm -fr build # clean
