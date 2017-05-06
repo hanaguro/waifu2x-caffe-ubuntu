@@ -68,7 +68,8 @@ private:
 	void SetReconstructedImage(cv::Mat &dst, cv::Mat &src, const cv::Size_<int> &size, const int inner_scale);
 
 	void DeconvertFromNetFormat(const int input_plane);
-	void ShrinkImage(const double scale);
+	void ShrinkImage(const Factor scale);
+	void ShrinkImage(const int width, const int height);
 
 	static int DepthBitToCVDepth(const int depth_bit);
 	static double GetValumeMaxFromCVDepth(const int cv_depth);
@@ -93,8 +94,8 @@ public:
 	// sourceÇÕPostprocess()Ç™èIÇÌÇÈÇ‹Ç≈ë∂ç›ÇµÇƒÇ¢ÇÈïKóvÇ™Ç†ÇÈ
 	Waifu2x::eWaifu2xError Load(const void* source, const int width, const int height, const int channel, const int stride);
 
-	double GetScaleFromWidth(const int width) const;
-	double GetScaleFromHeight(const int width) const;
+	Factor GetScaleFromWidth(const int width) const;
+	Factor GetScaleFromHeight(const int width) const;
 
 	bool RequestDenoise() const;
 
@@ -124,7 +125,8 @@ public:
 	// size: GetScalePaddingedImage()Ç≈éÊìæÇµÇΩsize
 	void SetReconstructedA(cv::Mat &im, const cv::Size_<int> &size, const int inner_scale);
 
-	void Postprocess(const int input_plane, const double scale, const int depth);
+	void Postprocess(const int input_plane, const Factor scale, const int depth);
+	void Postprocess(const int input_plane, const int width, const int height, const int depth);
 
 	cv::Mat GetEndImage() const;
 

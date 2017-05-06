@@ -404,14 +404,14 @@ Waifu2x::eWaifu2xError stImage::Load(const void* source, const int width, const 
 	return Waifu2x::eWaifu2xError_OK;
 }
 
-double stImage::GetScaleFromWidth(const int width) const
+Factor stImage::GetScaleFromWidth(const int width) const
 {
-	return (double)width / (double)mOrgSize.width;
+	return Factor((double)width, (double)mOrgSize.width);
 }
 
-double stImage::GetScaleFromHeight(const int height) const
+Factor stImage::GetScaleFromHeight(const int height) const
 {
-	return (double)height / (double)mOrgSize.height;
+	return Factor((double)height, (double)mOrgSize.height);
 }
 
 bool stImage::RequestDenoise() const
@@ -619,10 +619,24 @@ void stImage::SetReconstructedImage(cv::Mat &dst, cv::Mat &src, const cv::Size_<
 	src.release();
 }
 
-void stImage::Postprocess(const int input_plane, const double scale, const int depth)
+void stImage::Postprocess(const int input_plane, const Factor scale, const int depth)
 {
 	DeconvertFromNetFormat(input_plane);
 	ShrinkImage(scale);
+
+	// ’l‚ð0`1‚ÉƒNƒŠƒbƒsƒ“ƒO
+	cv::threshold(mEndImage, mEndImage, 1.0, 1.0, cv::THRESH_TRUNC);
+	cv::threshold(mEndImage, mEndImage, 0.0, 0.0, cv::THRESH_TOZERO);
+
+	mEndImage = DeconvertFromFloat(mEndImage, depth);
+
+	AlphaCleanImage(mEndImage);
+}
+
+void stImage::Postprocess(const int input_plane, const int width, const int height, const int depth)
+{
+	DeconvertFromNetFormat(input_plane);
+	ShrinkImage(width, height);
 
 	// ’l‚ð0`1‚ÉƒNƒŠƒbƒsƒ“ƒO
 	cv::threshold(mEndImage, mEndImage, 1.0, 1.0, cv::THRESH_TRUNC);
@@ -728,21 +742,35 @@ void stImage::DeconvertFromNetFormat(const int input_plane)
 	}
 }
 
-void stImage::ShrinkImage(const double scale)
+void stImage::ShrinkImage(const Factor scale)
 {
 	// TODO: scale = 1.0 ‚Å‚àˆ«‰e‹¿‚ð‹y‚Ú‚³‚È‚¢‚©’²‚×‚é
 
 	const int scaleBase = 2; // TODO: ƒ‚ƒfƒ‹‚ÌŠg‘å—¦‚É‚æ‚Á‚Ä‰Â•Ï‚Å‚«‚é‚æ‚¤‚É‚·‚é
 
-	const int scaleNum = ceil(log(scale) / log(scaleBase));
-	const double shrinkRatio = scale >= 1.0 ? scale / std::pow(scaleBase, scaleNum) : scale;
+	const auto Width = scale.MultiNumerator(mOrgSize.width);
+	const auto Height = scale.MultiNumerator(mOrgSize.height);
 
-	const cv::Size_<int> ns(mOrgSize.width * scale, mOrgSize.height * scale);
+	//const cv::Size_<int> ns(mOrgSize.width * scale, mOrgSize.height * scale);
+	const cv::Size_<int> ns((int)Width.toDouble(), (int)Height.toDouble());
 	if (mEndImage.size().width != ns.width || mEndImage.size().height != ns.height)
 	{
 		int argo = cv::INTER_CUBIC;
-		if (scale < 0.5)
+		if (scale.toDouble() < 0.5)
 			argo = cv::INTER_AREA;
+
+		cv::resize(mEndImage, mEndImage, ns, 0.0, 0.0, argo);
+	}
+}
+
+void stImage::ShrinkImage(const int width, const int height)
+{
+	// TODO: scale = 1.0 ‚Å‚àˆ«‰e‹¿‚ð‹y‚Ú‚³‚È‚¢‚©’²‚×‚é
+
+	const cv::Size_<int> ns(width, height);
+	if (mEndImage.size().width != ns.width || mEndImage.size().height != ns.height)
+	{
+		int argo = cv::INTER_CUBIC;
 
 		cv::resize(mEndImage, mEndImage, ns, 0.0, 0.0, argo);
 	}

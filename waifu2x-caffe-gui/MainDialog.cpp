@@ -171,8 +171,10 @@ tstring DialogEvent::AddName() const
 			addstr += TEXT("(x") + to_tstring(scale_ratio) + TEXT(")");
 		else if (scaleType == eScaleTypeWidth)
 			addstr += TEXT("(width ") + to_tstring(scale_width) + TEXT(")");
-		else
+		else if (scaleType == eScaleTypeHeight)
 			addstr += TEXT("(height ") + to_tstring(scale_height) + TEXT(")");
+		else
+			addstr += TEXT("(") + to_tstring(scale_width) + TEXT("x") + to_tstring(scale_height) + TEXT(")");
 	}
 
 	if (output_depth != 8)
@@ -236,8 +238,10 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 		scaleType = eScaleTypeRatio;
 	else if (SendMessage(GetDlgItem(dh, IDC_RADIO_SCALE_WIDTH), BM_GETCHECK, 0, 0))
 		scaleType = eScaleTypeWidth;
-	else
+	else if (SendMessage(GetDlgItem(dh, IDC_RADIO_SCALE_HEIGHT), BM_GETCHECK, 0, 0))
 		scaleType = eScaleTypeHeight;
+	else
+		scaleType = eScaleTypeWidthHeight;
 
 	{
 		TCHAR buf[AR_PATH_MAX] = TEXT("");
@@ -295,11 +299,73 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 				ret = false;
 
 				if (!silent)
-					MessageBox(dh, langStringList.GetString(L"MessageScaleHeightCheckError").c_str(), langStringList.GetString(L"MessageTitleError").c_str(), MB_OK | MB_ICONERROR);
+					MessageBox(dh, langStringList.GetString(L"MessageScaleWidthCheckError").c_str(), langStringList.GetString(L"MessageTitleError").c_str(), MB_OK | MB_ICONERROR);
 			}
 		}
 		else
 			scale_height = l;
+	}
+
+	if (scaleType == eScaleTypeWidthHeight)
+	{
+		TCHAR buf[AR_PATH_MAX] = TEXT("");
+		GetWindowText(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), buf, _countof(buf));
+		buf[_countof(buf) - 1] = TEXT('\0');
+
+		std::vector<const TCHAR *> v;
+		TCHAR *p = buf;
+		TCHAR *context= nullptr;
+		for (;;)
+		{
+			const auto str = _tcstok_s(p, TEXT(" x"), &context);
+			if (!str)
+				break;
+			p = nullptr;
+
+			v.push_back(str);
+		}
+
+		if (v.size() == 2)
+		{
+			TCHAR *ptr = nullptr;
+			long l = 0;
+			
+			l = _tcstol(v[0], &ptr, 10);
+			if (!ptr || *ptr != TEXT('\0') || l <= 0)
+			{
+				ret = false;
+
+				if (!silent)
+					MessageBox(dh, langStringList.GetString(L"MessageScaleWidthCheckError").c_str(), langStringList.GetString(L"MessageTitleError").c_str(), MB_OK | MB_ICONERROR);
+			}
+			else
+			{
+				scale_width = l;
+			}
+
+			if (ret)
+			{
+				l = _tcstol(v[1], &ptr, 10);
+				if (!ptr || *ptr != TEXT('\0') || l <= 0)
+				{
+					ret = false;
+
+					if (!silent)
+						MessageBox(dh, langStringList.GetString(L"MessageScaleWidthCheckError").c_str(), langStringList.GetString(L"MessageTitleError").c_str(), MB_OK | MB_ICONERROR);
+				}
+				else
+				{
+					scale_height = l;
+				}
+			}
+		}
+		else
+		{
+			ret = false;
+
+			if (!silent)
+				MessageBox(dh, langStringList.GetString(L"MessageScaleWidthCheckError").c_str(), langStringList.GetString(L"MessageTitleError").c_str(), MB_OK | MB_ICONERROR);
+		}
 	}
 
 	{
@@ -743,7 +809,11 @@ void DialogEvent::ProcessWaifu2x()
 		case eScaleTypeWidth:
 			ScaleWidth = scale_width;
 			break;
+		case eScaleTypeHeight:
+			ScaleHeight = scale_height;
+			break;
 		default:
+			ScaleWidth = scale_width;
 			ScaleHeight = scale_height;
 			break;
 		}
@@ -925,6 +995,7 @@ void DialogEvent::SaveIni(const bool isSyncMember)
 	tstring tScaleRatio;
 	tstring tScaleWidth;
 	tstring tScaleHeight;
+	tstring tScaleWidthHeight;
 	tstring tmode;
 	tstring tScaleMode;
 	tstring tprcess;
@@ -943,6 +1014,11 @@ void DialogEvent::SaveIni(const bool isSyncMember)
 		tScaleHeight = to_tstring(scale_height);
 	else
 		tScaleHeight = TEXT("");
+
+	if (scale_width > 0 && scale_height > 0)
+		tScaleWidthHeight = to_tstring(scale_width) + TEXT("x") + to_tstring(scale_height);
+	else
+		tScaleWidthHeight = TEXT("");
 
 	switch (mode)
 	{
@@ -972,8 +1048,10 @@ void DialogEvent::SaveIni(const bool isSyncMember)
 		tScaleMode = TEXT("Ratio");
 	else if (scaleType == eScaleTypeWidth)
 		tScaleMode = TEXT("Width");
-	else
+	else  if (scaleType == eScaleTypeHeight)
 		tScaleMode = TEXT("Height");
+	else
+		tScaleMode = TEXT("WidthHeight");
 
 	WritePrivateProfileString(TEXT("Setting"), TEXT("LastScaleMode"), tScaleMode.c_str(), getTString(SettingFilePath).c_str());
 
@@ -982,6 +1060,8 @@ void DialogEvent::SaveIni(const bool isSyncMember)
 	WritePrivateProfileString(TEXT("Setting"), TEXT("LastScaleWidth"), tScaleWidth.c_str(), getTString(SettingFilePath).c_str());
 
 	WritePrivateProfileString(TEXT("Setting"), TEXT("LastScaleHeight"), tScaleHeight.c_str(), getTString(SettingFilePath).c_str());
+
+	WritePrivateProfileString(TEXT("Setting"), TEXT("LastScaleWidthHeight"), tScaleWidthHeight.c_str(), getTString(SettingFilePath).c_str());
 
 	WritePrivateProfileString(TEXT("Setting"), TEXT("LastOutputExt"), outputExt.c_str(), getTString(SettingFilePath).c_str());
 
@@ -1207,7 +1287,7 @@ UINT_PTR DialogEvent::OFNHookProcOut(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARA
 				szPath[_countof(szPath) - 1] = TEXT('\0');
 
 				boost::filesystem::path p(szPath);
-				if (boost::filesystem::is_empty(szPath) || boost::filesystem::is_directory(szPath))
+				if (boost::filesystem::exists(p) && (boost::filesystem::is_empty(p) || boost::filesystem::is_directory(p)))
 				{
 					const auto filename = getTString(p.filename());
 
@@ -1481,6 +1561,7 @@ void DialogEvent::SetWindowTextLang()
 	SET_WINDOW_TEXT(IDC_RADIO_SCALE_RATIO);
 	SET_WINDOW_TEXT(IDC_RADIO_SCALE_WIDTH);
 	SET_WINDOW_TEXT(IDC_RADIO_SCALE_HEIGHT);
+	SET_WINDOW_TEXT(IDC_RADIO_SCALE_WIDTH_HEIGHT);
 	SET_WINDOW_TEXT(IDC_STATIC_MODEL);
 	SET_WINDOW_TEXT(IDC_CHECK_TTA);
 	SET_WINDOW_TEXT(IDC_STATIC_PROCESS_SPEED_SETTING);
@@ -1720,6 +1801,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 	tstring tScaleRatio;
 	tstring tScaleWidth;
 	tstring tScaleHeight;
+	tstring tScaleWidthHeight;
 
 	tstring tScaleMode;
 	tstring tmode;
@@ -1738,6 +1820,10 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		GetPrivateProfileString(TEXT("Setting"), TEXT("LastScaleHeight"), TEXT("0"), tmp, _countof(tmp), getTString(SettingFilePath).c_str());
 		tmp[_countof(tmp) - 1] = TEXT('\0');
 		tScaleHeight = tmp;
+
+		GetPrivateProfileString(TEXT("Setting"), TEXT("LastScaleWidthHeight"), TEXT("0"), tmp, _countof(tmp), getTString(SettingFilePath).c_str());
+		tmp[_countof(tmp) - 1] = TEXT('\0');
+		tScaleWidthHeight = tmp;
 
 		GetPrivateProfileString(TEXT("Setting"), TEXT("LastScaleMode"), TEXT("Ratio"), tmp, _countof(tmp), getTString(SettingFilePath).c_str());
 		tmp[_countof(tmp) - 1] = TEXT('\0');
@@ -1823,30 +1909,48 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_RATIO), BM_SETCHECK, BST_CHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
 
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), TRUE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), FALSE);
 	}
 	else if (tScaleMode == TEXT("Width"))
 	{
 		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_RATIO), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH), BM_SETCHECK, BST_CHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
 
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), TRUE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), FALSE);
+	}
+	else if (tScaleMode == TEXT("Height"))
+	{
+		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_RATIO), BM_SETCHECK, BST_UNCHECKED, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH), BM_SETCHECK, BST_UNCHECKED, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_HEIGHT), BM_SETCHECK, BST_CHECKED, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
+
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), TRUE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), FALSE);
 	}
 	else
 	{
 		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_RATIO), BM_SETCHECK, BST_UNCHECKED, 0);
 		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH), BM_SETCHECK, BST_UNCHECKED, 0);
-		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_HEIGHT), BM_SETCHECK, BST_CHECKED, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
+		SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH_HEIGHT), BM_SETCHECK, BST_CHECKED, 0);
 
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
-		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), TRUE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), TRUE);
 	}
 
 	if (noise_level == 0)
@@ -1888,9 +1992,11 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_RATIO), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_WIDTH), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_HEIGHT), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_WIDTH_HEIGHT), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), FALSE);
 	}
 	else if (tmode == TEXT("scale"))
 	{
@@ -1943,6 +2049,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 	SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SCALE_RATIO), tScaleRatio.c_str());
 	SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SCALE_WIDTH), tScaleWidth.c_str());
 	SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SCALE_HEIGHT), tScaleHeight.c_str());
+	SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SCALE_WIDTH_HEIGHT), tScaleWidthHeight.c_str());
 
 	SetWindowText(GetDlgItem(hWnd, IDC_EDIT_INPUT_EXT_LIST), inputFileExt.c_str());
 
@@ -2200,15 +2307,37 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 					isSetParam = true;
 				}
 
-				if (cmdScaleWidth.isSet())
+				if (cmdScaleWidth.isSet() && cmdScaleHeight.isSet())
+				{
+					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_RATIO), BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH), BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH_HEIGHT), BM_SETCHECK, BST_CHECKED, 0);
+
+					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
+					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
+					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), TRUE);
+
+					auto str = to_tstring(cmdScaleWidth.getValue());
+					str += TEXT("x");
+					str += to_tstring(cmdScaleHeight.getValue());
+
+					SetWindowText(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), str.c_str());
+
+					isSetParam = true;
+				}
+				else if (cmdScaleWidth.isSet())
 				{
 					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_RATIO), BM_SETCHECK, BST_UNCHECKED, 0);
 					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH), BM_SETCHECK, BST_CHECKED, 0);
 					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
 
 					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
 					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), TRUE);
 					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), FALSE);
 
 					SetWindowText(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), to_tstring(cmdScaleWidth.getValue()).c_str());
 
@@ -2219,10 +2348,12 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_RATIO), BM_SETCHECK, BST_UNCHECKED, 0);
 					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH), BM_SETCHECK, BST_UNCHECKED, 0);
 					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_HEIGHT), BM_SETCHECK, BST_CHECKED, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
 
 					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
 					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
 					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), TRUE);
+					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), TRUE);
 
 					SetWindowText(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), to_tstring(cmdScaleHeight.getValue()).c_str());
 
@@ -2233,10 +2364,12 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_RATIO), BM_SETCHECK, BST_CHECKED, 0);
 					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH), BM_SETCHECK, BST_UNCHECKED, 0);
 					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
+					SendMessage(GetDlgItem(hWnd, IDC_RADIO_SCALE_WIDTH_HEIGHT), BM_SETCHECK, BST_UNCHECKED, 0);
 
 					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), TRUE);
 					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
 					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+					EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), FALSE);
 
 					SetWindowText(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), to_tstring(cmdScaleRatio.getValue()).c_str());
 
@@ -2436,6 +2569,7 @@ void DialogEvent::OnModeChange(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID l
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_RATIO), TRUE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_WIDTH), TRUE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_HEIGHT), TRUE);
+		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_WIDTH_HEIGHT), TRUE);
 
 		ScaleRadio(NULL, NULL, NULL, NULL); // ‚±‚±‚ÅReplaceAddString()‚â‚é‚©‚çreturn
 		return;
@@ -2445,10 +2579,12 @@ void DialogEvent::OnModeChange(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID l
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_RATIO), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_WIDTH), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_HEIGHT), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_WIDTH_HEIGHT), FALSE);
 
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), FALSE);
 	}
 
 	ReplaceAddString();
@@ -2461,18 +2597,28 @@ void DialogEvent::ScaleRadio(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpD
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), TRUE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), FALSE);
 	}
 	else if (SendMessage(GetDlgItem(dh, IDC_RADIO_SCALE_WIDTH), BM_GETCHECK, 0, 0))
 	{
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), TRUE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), FALSE);
+	}
+	else if (SendMessage(GetDlgItem(dh, IDC_RADIO_SCALE_HEIGHT), BM_GETCHECK, 0, 0))
+	{
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), TRUE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), FALSE);
 	}
 	else
 	{
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_RATIO), FALSE);
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH), FALSE);
-		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), TRUE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_HEIGHT), FALSE);
+		EnableWindow(GetDlgItem(dh, IDC_EDIT_SCALE_WIDTH_HEIGHT), TRUE);
 	}
 
 	ReplaceAddString();
