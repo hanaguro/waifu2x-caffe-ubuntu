@@ -10,9 +10,11 @@ cp Makefile.config.example-ubuntu Makefile.config
 make
 ```
 
+When using cuDNN, set `USE_CUDNN := 1` in `Makefile.config`.
+
 ## Build waifu2x-caffe
 
-(I tested on Ubuntu16.04 + CUDA8.0 + CuDNN 5.0 + GTX 1080)
+(I tested on Ubuntu18.04 + CUDA10.1 + CuDNN 7.5 + GTX 1080)
 
 ```sh
 git clone -b ubuntu https://github.com/nagadomi/waifu2x-caffe.git
@@ -31,6 +33,12 @@ cmake .. -DCUDA_NVCC_FLAGS="-D_FORCE_INLINES  -gencode arch=compute_61,code=sm_6
 make
 ln -s `realpath ./waifu2x-caffe` ../bin
 ```
+
+When you got `cuDNN Not Found` issue,
+```
+cuDNN             :   Not Found
+```
+re-run cmake command. (Not sure, but it can be solved with re-run cmake command).
 
 ## Run
 ```
