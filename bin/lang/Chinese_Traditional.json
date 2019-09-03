@@ -24,12 +24,13 @@
 "IDC_RADIONOISE_LEVEL3":"等級 3",
 "IDC_STATIC_SCALE_RATE":"放大倍率",
 "IDC_RADIO_SCALE_RATIO":"比例設定",
-"IDC_RADIO_SCALE_WIDTH":"轉換高度設定",
-"IDC_RADIO_SCALE_HEIGHT":"轉換寬度設定",
+"IDC_RADIO_SCALE_WIDTH":"轉換寬度設定",
+"IDC_RADIO_SCALE_HEIGHT":"轉換高度設定",
 "IDC_STATIC_MODEL":"模組",
 "IDC_RADIO_MODEL_RGB":"二次元插圖（RGB 模式）",
 "IDC_RADIO_MODEL_PHOTO":"照片和動畫（Photo 模式）",
 "IDC_RADIO_MODEL_Y":"二次元插圖（Y 模式）",
+"IDC_RADIO_MODEL_UpResNet10":"二次元插圖（UpResNet10）",
 "IDC_CHECK_TTA":"使用 TTA 模式",
 "IDC_STATIC_PROCESS_SPEED_SETTING":"處理速度設定",
 "IDC_STATIC_PROCESSOR":"使用處理器",
@@ -95,5 +96,6 @@
 "IDC_STATIC_USE_GPU_NO":"使用GPU數量",
 "IDC_RADIO_MODEL_UPCONV_RGB":"二次元插圖（UpRGB 模式）",
 "IDC_RADIO_MODEL_UPCONV_PHOTO":"照片和動畫（UpPhoto 模式）",
-"MessageLogFatalError":"發生嚴重錯誤。\r\n可能是分割大小過大"
+"MessageLogFatalError":"發生嚴重錯誤。\r\n可能是分割大小過大",
+"IDC_RADIO_MODEL_CUNET":"二次元插圖（CUnet 模式）"
 }

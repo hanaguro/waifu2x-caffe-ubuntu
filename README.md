@@ -1,4 +1,4 @@
-﻿# waifu2x-caffe (for Ubuntu)
+# waifu2x-caffe (for Ubuntu)
 
 waifu2x-caffe for Ubuntu. It's adapted from https://github.com/onishy/Waifu2x-Caffe-Linux .
 See `INSTALL-linux.md`.
@@ -12,7 +12,7 @@ waifu2x-caffe (for Windows)
 [Caffe](http://caffe.berkeleyvision.org/)を用いて書き直し、Windows向けにビルドしたソフトです。
 CPUで変換することも出来ますが、CUDA(あるいはcuDNN)を使うとCPUより高速に変換することが出来ます。
 
-GUI supports English, Japanese, Simplified Chinese, Traditional Chinese, Korean, Turkish, and French.
+GUI supports English, Japanese, Simplified Chinese, Traditional Chinese, Korean, Turkish, Spanish, Russian, and French.
 
 ソフトのダウンロードは[こちらのreleasesページ](https://github.com/lltcggie/waifu2x-caffe/releases)の「Downloads」の項で出来ます。
 
@@ -24,11 +24,11 @@ GUI supports English, Japanese, Simplified Chinese, Traditional Chinese, Korean,
 
  * OS : Windows Vista以降 64bit (32bit用exeはありません)
  * メモリ : 空きメモリ1GB以上 (ただし、変換する画像サイズによる)
- * GPU : Compute Capability 2.0 以上のNVIDIA製GPU(CPUで変換する場合は不要)
- * Visual C++ 2013 再頒布可能パッケージがインストールされていること(必須)
-    - 上記パッケージは[こちら](https://www.microsoft.com/ja-jp/download/details.aspx?id=40784)
+ * GPU : Compute Capability 3.0 以上のNVIDIA製GPU(CPUで変換する場合は不要)
+ * Microsoft Visual C++ 2015 再頒布可能パッケージ Update 3(x64版)がインストールされていること(必須)
+    - 上記パッケージは[こちら](https://www.microsoft.com/ja-jp/download/details.aspx?id=53587)
     - `ダウンロード` ボタンを押した後、`vcredist_x64.exe`を選択し、ダウンロード・インストールを行って下さい。
-    - 見つからない場合は、「Visual C++ 2013 再頒布可能パッケージ」で検索してみて下さい。
+    - 見つからない場合は、「Visual C++ 2015 再頒布可能パッケージ Update 3」で検索してみて下さい。
 
 cuDNNで変換する場合はさらに
 
@@ -48,7 +48,7 @@ cuDNNを使わなくてもCUDAで変換出来ますが、cuDNNを使うと以下
 
 このような利点があるcuDNNですが、ライセンスの関係上動作に必要なファイルを配布することが出来ません。  
 なので、cuDNNを使いたい人は[こちらのページ](https://developer.nvidia.com/cuDNN)でWindows向けバイナリ(v5.1 RC以降)をダウンロードし、
-「cudnn64_6.dll」をwaifu2x-caffeのフォルダに入れて下さい。  
+「cudnn64_7.dll」をwaifu2x-caffeのフォルダに入れて下さい。  
 なお、ソフトを起動している最中にdllを入れた場合はソフトを起動しなおしてください。  
 (cuDNNをダウンロードするにはNVIDIA Developerへの登録とCUDA Registered Developersへの登録が必要です。
  CUDA Registered Developersはおそらく(簡単な)審査があるっぽいので登録してもすぐにcuDNNをダウンロード出来るわけではありません。)
@@ -185,6 +185,8 @@ CUDA UpRGBモデル
       * 2次元イラスト(UpRGBモデル) : 2次元イラスト(RGBモデル)より高速かつ同等以上の画質で変換するモデル。ただしRGBモデルより消費するメモリ(VRAM)の量が多いので、変換中に強制終了する場合は分割サイズを調節すること
       * 写真・アニメ(UpPhotoモデル) : 写真・アニメ(Photoモデル)より高速かつ同等以上の画質で変換するモデル。ただしPhotoモデルより消費するメモリ(VRAM)の量が多いので、変換中に強制終了する場合は分割サイズを調節すること
       * 2次元イラスト(Yモデル) : 画像の輝度のみを変換する2次元イラスト用モデル
+      * 2次元イラスト(UpResNet10モデル) : 2次元イラスト(UpRGBモデル)より高画質で変換するモデル。このモデルは分割サイズが違うと出力結果が変わるので注意すること
+      * 2次元イラスト(CUnetモデル) : 2次元イラストを同梱のモデルで一番高画質で変換できるモデル。このモデルは分割サイズが違うと出力結果が変わるので注意すること
 
 ### 「TTAモードを使う」
     TTA(Test-Time Augmentation)モードを使うかどうかを指定します。
@@ -200,6 +202,13 @@ CUDA UpRGBモデル
     下の方は「crop_size_list.txt」から読み出した汎用的な分割サイズです。
     分割サイズが大きすぎる場合、要求されるメモリの量(GPUを使う場合はVRAMの量)がPCで使用できるメモリを超えてソフトが強制終了するので気をつけてください。
     処理速度にそれなりに影響するので、同じ画像サイズの画像をフォルダ指定で大量に変換するときは、最適な分割サイズを調べてから変換することをおすすめします。
+    ただし、モデルによっては分割サイズを変更すると出力結果が変わるものがあるので気を付けてください。
+    (その場合は分割サイズはデフォルトを使用し、バッチサイズを調整することで処理速度を上げることができます)
+
+### 「バッチサイズ」
+    内部でまとめて処理を行う際のサイズを指定します。
+    バッチサイズを大きくすると処理速度が速くなることがあります。
+    分割サイズと同様に要求されるメモリの量がPCで使用できるメモリを超えないように気を付けてください。
 
 ## 動作設定
      あまり変更する機会がないと思われる動作設定をまとめた設定群です。
@@ -303,7 +312,7 @@ GUI版では入力ファイル以外のコマンドラインオプションを�
      scale_widthかscale_heightが指定された場合、そちらが優先されます。
      2.0以外の数値を指定すると、次のような処理を行います。
       * まず、指定された倍率を必要十分にカバーするように、2倍拡大を繰り返し行います。
-      * 2の累乗以外の数値が指定されている場合は、指定倍率になるように拡大した画像を線形フィルタで縮小します。
+      * 2の累乗以外の数値が指定されている場合は、指定倍率になるように拡大した画像を縮小します。
 
 ### -w <整数>, --scale_width <整数>
      画像の縦横比を維持したまま、指定された横幅になるように拡大します(単位はピクセル)。
@@ -377,7 +386,7 @@ GUI版ではオプション指定に当てはまらなかった引数は入力�
 ### --no_overwrite <0|1>
      `1`を指定すると、画像の書き込み先に同名のファイルが存在する場合は変換を行いません。
 
-### -y <upconv_7_anime_style_art_rgb|upconv_7_photo|anime_style_art_rgb|photo|anime_style_art_y>,  --model_type <upconv_7_anime_style_art_rgb|upconv_7_photo|anime_style_art_rgb|photo|anime_style_art_y>
+### -y <upconv_7_anime_style_art_rgb|upconv_7_photo|anime_style_art_rgb|photo|anime_style_art_y|upresnet10|cunet>,  --model_type <upconv_7_anime_style_art_rgb|upconv_7_photo|anime_style_art_rgb|photo|anime_style_art_y|upresnet10|cunet>
      使用するモデルを指定します。
      GUIでの設定項目「モデル」と以下のように対応しています。
       * upconv_7_anime_style_art_rgb : 2次元イラスト(UpRGBモデル)
@@ -385,6 +394,8 @@ GUI版ではオプション指定に当てはまらなかった引数は入力�
       * anime_style_art_rgb : 2次元イラスト(RGBモデル)
       * photo : 写真・アニメ(Photoモデル)
       * anime_style_art_y : 2次元イラスト(Yモデル)
+      * upresnet10 : 2次元イラスト(UpResNet10モデル)
+      * cunet : 2次元イラスト(CUnetモデル)
 
 
  コマンドラインオプション(CUI版)
@@ -412,13 +423,15 @@ GUI版ではオプション指定に当てはまらなかった引数は入力�
      保存される場所は、基本的には入力画像と同じディレクトリになります。
 
 ### --model_dir <文字列>
-     モデルが格納されているディレクトリへのパスを指定します。デフォルト値は`models/upconv_7_anime_style_art_rgb`です。
+     モデルが格納されているディレクトリへのパスを指定します。デフォルト値は`models/cunet`です。
      標準では以下のモデルが付属しています。
-      * `models/anime_style_art_rgb` : RGBすべてを変換する2次元画像用モデル
-      * `models/anime_style_art` : 輝度のみを変換する2次元画像用モデル
-      * `models/photo` : RGBすべてを変換する写真、アニメ画像用モデル
-      * `models/upconv_7_anime_style_art_rgb` : anime_style_art_rgbより高速かつ同等以上の画質で変換するモデル
-      * `models/upconv_7_photo` : photoより高速かつ同等以上の画質で変換するモデル
+      * `models/anime_style_art_rgb` : 2次元イラスト(RGBモデル)
+      * `models/anime_style_art` : 2次元イラスト(Yモデル)
+      * `models/photo` : 写真・アニメ(Photoモデル)
+      * `models/upconv_7_anime_style_art_rgb` : 2次元イラスト(UpRGBモデル)
+      * `models/upconv_7_photo` : 写真・アニメ(UpPhotoモデル)
+      * `models/upresnet10` : 2次元イラスト(UpResNet10モデル)
+      * `models/cunet` : 2次元イラスト(CUnetモデル)
       * `models/ukbench` : 旧式の写真用モデル(拡大するモデルのみ付属しています。ノイズ除去は出来ません)
      基本的には指定しなくても大丈夫です。デフォルト以外のモデルや自作のモデルを使用する時などに指定して下さい。
 
@@ -485,10 +498,11 @@ ex.
 
 謝辞
 ------
-オリジナルの[waifu2x](https://github.com/nagadomi/waifu2x)、及びモデルの制作を行い、MITライセンスの下で公開して下さった [ultraist](https://twitter.com/ultraistter)さん、
-オリジナルのwaifu2xを元に[waifu2x-converter](https://github.com/WL-Amigo/waifu2x-converter-cpp)を作成して下さった [アミーゴ](https://twitter.com/WL_Amigo)さん(READMEやLICENSE.txtの書き方、OpenCVの使い方等かなり参考にさせていただきました)
-に、感謝します。
-また、メッセージを英訳してくださった @paul70078 さん、メッセージを中国語(簡体字)に翻訳してくださった @yoonhakcher さん、中国語(簡体字)訳のプルリクエストを下さった @mzhboy さん、
-メッセージを韓国語に翻訳してくださった @kenin0726 さん、韓国語訳の改善を提案してくださった @aruhirin さん、
-メッセージを中国語(繁体字)に翻訳してくださった @lizardon1995 さん、@yoonhakcher さん、トルコ語訳のプルリクエストを下さった @Scharynche さん、フランス語訳のプルリクエストを下さった @Serized さん、
+オリジナルの[waifu2x](https://github.com/nagadomi/waifu2x)、及びモデルの制作を行い、MITライセンスの下で公開して下さった [ultraist](https://twitter.com/ultraistter)さん、  
+オリジナルのwaifu2xを元に[waifu2x-converter](https://github.com/WL-Amigo/waifu2x-converter-cpp)を作成して下さった [アミーゴ](https://twitter.com/WL_Amigo)さん(READMEやLICENSE.txtの書き方、OpenCVの使い方等かなり参考にさせていただきました)  
+[waifu2x-chainer](https://github.com/tsurumeso/waifu2x-chainer)を作成してオリジナルのモデルの制作を行い、MITライセンスの下で公開して下さった[tsurumeso](https://github.com/tsurumeso)さん  
+に、感謝します。  
+また、メッセージを英訳してくださった @paul70078 さん、メッセージを中国語(簡体字)に翻訳してくださった @yoonhakcher さん、中国語(簡体字)訳のプルリクエストを下さった @mzhboy さん、  
+メッセージを韓国語に翻訳してくださった @kenin0726 さん、韓国語訳の改善を提案してくださった @aruhirin さん、  
+メッセージを中国語(繁体字)に翻訳してくださった @lizardon1995 さん、@yoonhakcher さん、トルコ語訳のプルリクエストを下さった @Scharynche さん、フランス語訳のプルリクエストを下さった @Serized さん、  
 GUI版のアイコンを提供してくださった JYUNYAさん に感謝します。

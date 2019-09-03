@@ -41,12 +41,14 @@
 #pragma comment(lib, "opencv_core" CV_VERSION_STR CV_EXT_STR)
 #pragma comment(lib, "opencv_imgcodecs" CV_VERSION_STR CV_EXT_STR)
 #pragma comment(lib, "opencv_imgproc" CV_VERSION_STR CV_EXT_STR)
-//#pragma comment(lib, "IlmImf" CV_EXT_STR)
-//#pragma comment(lib, "libjasper" CV_EXT_STR)
-//#pragma comment(lib, "libjpeg" CV_EXT_STR)
-//#pragma comment(lib, "libpng" CV_EXT_STR)
-//#pragma comment(lib, "libtiff" CV_EXT_STR)
-//#pragma comment(lib, "libwebp" CV_EXT_STR)
+#pragma comment(lib, "IlmImf" CV_EXT_STR)
+#pragma comment(lib, "ippicvmt.lib")
+#pragma comment(lib, "libjasper" CV_EXT_STR)
+#pragma comment(lib, "libjpeg-turbo" CV_EXT_STR)
+#pragma comment(lib, "libpng" CV_EXT_STR)
+#pragma comment(lib, "libtiff" CV_EXT_STR)
+#pragma comment(lib, "libwebp" CV_EXT_STR)
+#pragma comment(lib, "zlib" CV_EXT_STR)
 
 #pragma comment(lib, "libopenblas.dll.a")
 #pragma comment(lib, "cudart.lib")
@@ -56,32 +58,27 @@
 
 #ifdef _DEBUG
 #pragma comment(lib, "caffe-d.lib")
-#pragma comment(lib, "proto-d.lib")
-#pragma comment(lib, "libboost_system-vc120-mt-gd-1_59.lib")
-#pragma comment(lib, "libboost_thread-vc120-mt-gd-1_59.lib")
-#pragma comment(lib, "libboost_filesystem-vc120-mt-gd-1_59.lib")
+#pragma comment(lib, "caffeproto-d.lib")
+#pragma comment(lib, "libprotobufd.lib")
 #pragma comment(lib, "glogd.lib")
 #pragma comment(lib, "gflagsd.lib")
-#pragma comment(lib, "libprotobufd.lib")
-#pragma comment(lib, "libhdf5_hl_D.lib")
-#pragma comment(lib, "libhdf5_D.lib")
-#pragma comment(lib, "zlibstaticd.lib")
+#pragma comment(lib, "libboost_system-vc140-mt-gd-1_61.lib")
+#pragma comment(lib, "boost_thread-vc140-mt-gd-1_61.lib")
+#pragma comment(lib, "boost_filesystem-vc140-mt-gd-1_61.lib")
+#pragma comment(lib, "boost_iostreams-vc140-mt-gd-1_61.lib")
+//#pragma comment(lib, "zlibstaticd.lib")
 
-#pragma comment(lib, "libboost_iostreams-vc120-mt-gd-1_59.lib")
+
 #else
 #pragma comment(lib, "caffe.lib")
-#pragma comment(lib, "proto.lib")
-#pragma comment(lib, "libboost_system-vc120-mt-1_59.lib")
-#pragma comment(lib, "libboost_thread-vc120-mt-1_59.lib")
-#pragma comment(lib, "libboost_filesystem-vc120-mt-1_59.lib")
+#pragma comment(lib, "caffeproto.lib")
+#pragma comment(lib, "libprotobuf.lib")
 #pragma comment(lib, "glog.lib")
 #pragma comment(lib, "gflags.lib")
-#pragma comment(lib, "libprotobuf.lib")
-#pragma comment(lib, "libhdf5_hl.lib")
-#pragma comment(lib, "libhdf5.lib")
-#pragma comment(lib, "zlibstatic.lib")
-
-#pragma comment(lib, "libboost_iostreams-vc120-mt-1_59.lib")
+#pragma comment(lib, "libboost_system-vc140-mt-1_61.lib")
+#pragma comment(lib, "boost_thread-vc140-mt-1_61.lib")
+#pragma comment(lib, "boost_filesystem-vc140-mt-1_61.lib")
+#pragma comment(lib, "boost_iostreams-vc140-mt-1_61.lib")
 #endif
 #endif
 
@@ -474,7 +471,7 @@ Waifu2x::eWaifu2xcuDNNError Waifu2x::can_use_cuDNN()
 			cudnnGetVersionType cudnnGetVersionFunc = (cudnnGetVersionType)GetProcAddress(hModule, "cudnnGetVersion");
 			if (cudnnCreateFunc != nullptr && cudnnDestroyFunc != nullptr && cudnnGetVersionFunc != nullptr)
 			{
-				if (cudnnGetVersionFunc() >= 3000)
+				if (cudnnGetVersionFunc() >= CUDNN_REQUIRE_VERION)
 				{
 					cudnnHandle_t h;
 					if (cudnnCreateFunc(&h) == CUDNN_STATUS_SUCCESS)
@@ -658,8 +655,11 @@ Waifu2x::eWaifu2xError Waifu2x::Init(const eWaifu2xModelType mode, const int noi
 		if (ret != Waifu2x::eWaifu2xError_OK)
 			return ret;
 
-		mHasNoiseScale = info.has_noise_scale;
+		mHasNoiseScaleOnly = info.has_noise_scale;
 		mInputPlane = info.channels;
+
+		if (mode == eWaifu2xModelTypeNoise && info.has_noise_only) // ノイズ除去だけかつノイズ除去モデルが存在するのであればノイズ除去スケールモデルは使わないようにする
+			mHasNoiseScaleOnly = false;
 
 		if (mode == eWaifu2xModelTypeNoise || mode == eWaifu2xModelTypeNoiseScale || mode == eWaifu2xModelTypeAutoScale)
 		{
@@ -668,7 +668,7 @@ Waifu2x::eWaifu2xError Waifu2x::Init(const eWaifu2xModelType mode, const int noi
 			mNoiseNet.reset(new cNet);
 
 			eWaifu2xModelType Mode = mode;
-			if (info.has_noise_scale) // ノイズ除去と拡大を同時に行う
+			if (mHasNoiseScaleOnly) // ノイズ除去と拡大を同時に行う
 			{
 				// ノイズ除去拡大ネットの構築はeWaifu2xModelTypeNoiseScaleを指定する必要がある
 				Mode = eWaifu2xModelTypeNoiseScale;
@@ -690,8 +690,8 @@ Waifu2x::eWaifu2xError Waifu2x::Init(const eWaifu2xModelType mode, const int noi
 			mMaxNetOffset = mNoiseNet->GetNetOffset();
 		}
 
-		// noise_scaleを持っている場合はαチャンネルの拡大のためにmScaleNetも構築する必要がある
-		if (info.has_noise_scale || mode == eWaifu2xModelTypeScale || mode == eWaifu2xModelTypeNoiseScale || mode == eWaifu2xModelTypeAutoScale)
+		// 拡大が必要な場合はαチャンネルの拡大のためにmScaleNetも構築する必要がある
+		if (mode == eWaifu2xModelTypeScale || mode == eWaifu2xModelTypeNoiseScale || mode == eWaifu2xModelTypeAutoScale)
 		{
 			const std::string base_name = "scale2.0x_model";
 
@@ -908,7 +908,7 @@ Waifu2x::eWaifu2xError Waifu2x::ReconstructImage(const Factor factor, const int 
 
 	if (isReconstructNoise)
 	{
-		if (!mHasNoiseScale) // ノイズ除去だけ
+		if (!mHasNoiseScaleOnly) // ノイズ除去だけ
 		{
 			cv::Mat im;
 			cv::Size_<int> size;
@@ -1151,4 +1151,15 @@ std::string Waifu2x::GetModelName(const boost::filesystem::path & model_dir)
 	const boost::filesystem::path info_path = mode_dir_path / "info.json";
 
 	return cNet::GetModelName(info_path);
+}
+
+bool Waifu2x::GetInfo(const boost::filesystem::path &model_dir, stInfo &info)
+{
+	const boost::filesystem::path mode_dir_path(GetModeDirPath(model_dir));
+	if (!boost::filesystem::exists(mode_dir_path))
+		return false;
+
+	const boost::filesystem::path info_path = mode_dir_path / "info.json";
+
+	return cNet::GetInfo(info_path, info) == Waifu2x::eWaifu2xError_OK;
 }

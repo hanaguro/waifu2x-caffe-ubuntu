@@ -22,6 +22,53 @@
 #define WM_END_THREAD (WM_APP + 7)
 
 
+enum eModelType
+{
+	eModelTypeUpConvRGB,
+	eModelTypeUpConvPhoto,
+	eModelTypeRGB,
+	eModelTypePhoto,
+	eModelTypeY,
+	eModelTypeUpResNet10,
+	eModelTypeCunet,
+	eModelTypeEnd,
+};
+
+const int DefaultModel = eModelTypeCunet;
+
+const tstring ModelPathList[eModelTypeEnd] = {
+	TEXT("models/upconv_7_anime_style_art_rgb"),
+	TEXT("models/upconv_7_photo"),
+	TEXT("models/anime_style_art_rgb"),
+	TEXT("models/photo"),
+	TEXT("models/anime_style_art"),
+	TEXT("models/upresnet10"),
+	TEXT("models/cunet"),
+};
+
+const std::wstring ModelTypeList[eModelTypeEnd] = {
+	L"upconv_7_anime_style_art_rgb",
+	L"upconv_7_photo",
+	L"anime_style_art_rgb",
+	L"photo",
+	L"anime_style_art_y",
+	L"upresnet10",
+	L"cunet",
+};
+
+const std::wstring DefaultModelType = ModelTypeList[DefaultModel];
+
+const std::wstring ModelTitleLangKeyList[eModelTypeEnd] = {
+	L"IDC_RADIO_MODEL_UPCONV_RGB",
+	L"IDC_RADIO_MODEL_UPCONV_PHOTO",
+	L"IDC_RADIO_MODEL_RGB",
+	L"IDC_RADIO_MODEL_PHOTO",
+	L"IDC_RADIO_MODEL_Y",
+	L"IDC_RADIO_MODEL_UpResNet10",
+	L"IDC_RADIO_MODEL_CUNET",
+};
+
+
 // ダイアログ用
 class DialogEvent
 {
@@ -84,16 +131,6 @@ private:
 	};
 
 	eScaleType scaleType;
-
-	enum eModelType
-	{
-		eModelTypeRGB,
-		eModelTypePhoto,
-		eModelTypeY,
-		eModelTypeUpConvRGB,
-		eModelTypeUpConvPhoto,
-		eModelTypeEnd,
-	};
 
 	eModelType modelType;
 
@@ -191,6 +228,8 @@ public:
 	void ScaleRadio(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData);
 
 	void CheckCUDNN(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData);
+
+	void OnModelChange(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData);
 
 	LRESULT OnSetInputFilePath(const TCHAR *tPath);
 

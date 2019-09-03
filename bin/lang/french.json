@@ -31,6 +31,7 @@
 "IDC_RADIO_MODEL_RGB":"Illustration 2D (modèle RGB)",
 "IDC_RADIO_MODEL_PHOTO":"Photo & animé (modèle Photo)",
 "IDC_RADIO_MODEL_Y":"Illustration 2D (modèle Y)",
+"IDC_RADIO_MODEL_UpResNet10":"Illustration 2D (UpResNet10)",
 "IDC_CHECK_TTA":"Utiliser mode TTA",
 "IDC_STATIC_PROCESS_SPEED_SETTING":"Vitesse de traitement",
 "IDC_STATIC_PROCESSOR":"Utiliser le processeur",
@@ -96,5 +97,6 @@
 "IDC_STATIC_USE_GPU_NO":"Utiliser GPU n°",
 "IDC_RADIO_MODEL_UPCONV_RGB":"Illustration 2D (modèle UpRGB)",
 "IDC_RADIO_MODEL_UPCONV_PHOTO":"Photo (modèle UpPhoto)",
-"MessageLogFatalError":"Erreur fatale\r\nLa taille de découpage est peut-être trop grande"
+"MessageLogFatalError":"Erreur fatale\r\nLa taille de découpage est peut-être trop grande",
+"IDC_RADIO_MODEL_CUNET":"Illustration 2D (modèle CUnet)"
 }

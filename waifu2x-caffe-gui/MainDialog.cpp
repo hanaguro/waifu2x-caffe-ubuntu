@@ -25,6 +25,8 @@
 
 const size_t AR_PATH_MAX(1024);
 
+const int MaxBatchSizeList = 20;
+
 const int MinCommonDivisor = 50;
 const int DefaultCommonDivisor = 128;
 const std::pair<int, int> DefaultCommonDivisorRange = {90, 140};
@@ -37,6 +39,7 @@ const TCHAR * const LangListFileName = TEXT("lang/LangList.txt");
 const TCHAR * const MultiFileStr = TEXT("(Multi File)");
 
 const UINT_PTR nIDEventTimeLeft = 1000;
+
 
 LangStringList DialogEvent::langStringList;
 HWND DialogEvent::dh;
@@ -370,35 +373,13 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 
 	{
 		const int cur = SendMessage(GetDlgItem(dh, IDC_COMBO_MODEL), CB_GETCURSEL, 0, 0);
-		switch (cur)
+		for (int i = 0; i < eModelTypeEnd; i++)
 		{
-		case 0:
-			model_dir = TEXT("models/upconv_7_anime_style_art_rgb");
-			modelType = eModelTypeUpConvRGB;
-			break;
-
-		case 1:
-			model_dir = TEXT("models/upconv_7_photo");
-			modelType = eModelTypeUpConvPhoto;
-			break;
-
-		case 2:
-			model_dir = TEXT("models/anime_style_art_rgb");
-			modelType = eModelTypeRGB;
-			break;
-
-		case 3:
-			model_dir = TEXT("models/photo");
-			modelType = eModelTypePhoto;
-			break;
-
-		case 4:
-			model_dir = TEXT("models/anime_style_art");
-			modelType = eModelTypeY;
-			break;
-
-		default:
-			break;
+			if (cur == i)
+			{
+				model_dir = ModelPathList[i];
+				modelType = (eModelType)i;
+			}
 		}
 	}
 
@@ -472,6 +453,10 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 		GetWindowText(GetDlgItem(dh, IDC_COMBO_CROP_SIZE), buf, _countof(buf));
 		buf[_countof(buf) - 1] = TEXT('\0');
 
+		Waifu2x::stInfo info;
+		if (!Waifu2x::GetInfo(model_dir, info))
+			info.force_divisible_crop_size = 1;
+
 		TCHAR *ptr = nullptr;
 		crop_size = _tcstol(buf, &ptr, 10);
 		if (!ptr || *ptr != '\0' || crop_size <= 0)
@@ -480,6 +465,30 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 			ret = false;
 
 			MessageBox(dh, langStringList.GetString(L"MessageCropSizeCheckError").c_str(), langStringList.GetString(L"MessageTitleError").c_str(), MB_OK | MB_ICONERROR);
+		}
+		else if (crop_size % info.force_divisible_crop_size != 0) // このモデルでは設定できないCropSize
+		{
+			wchar_t buf[1024] = { TEXT('\0') };
+			swprintf(buf, langStringList.GetString(L"MessageCropSizeDivisibleCheckError").c_str(), info.force_divisible_crop_size);
+
+			ret = false;
+			MessageBoxW(dh, buf, langStringList.GetString(L"MessageTitleError").c_str(), MB_OK | MB_ICONERROR);
+		}
+	}
+
+	{
+		TCHAR buf[AR_PATH_MAX] = TEXT("");
+		GetWindowText(GetDlgItem(dh, IDC_COMBO_BATCH_SIZE), buf, _countof(buf));
+		buf[_countof(buf) - 1] = TEXT('\0');
+
+		TCHAR *ptr = nullptr;
+		batch_size = _tcstol(buf, &ptr, 10);
+		if (!ptr || *ptr != '\0' || batch_size <= 0)
+		{
+			batch_size = 1;
+			ret = false;
+
+			MessageBox(dh, langStringList.GetString(L"MessageBatchSizeCheckError").c_str(), langStringList.GetString(L"MessageTitleError").c_str(), MB_OK | MB_ICONERROR);
 		}
 	}
 
@@ -522,20 +531,55 @@ void DialogEvent::SetCropSizeList(const boost::filesystem::path & input_path)
 	}
 	), list.end());
 
+	bool isRecommendedCropSize = false;
+	Waifu2x::stInfo info;
+	if (Waifu2x::GetInfo(model_dir, info))
+	{
+		int recommended_crop_size = 0;
+		switch (mode)
+		{
+		case Waifu2x::eWaifu2xModelTypeNoise:
+			recommended_crop_size = info.noise.recommended_crop_size;
+			break;
+		case Waifu2x::eWaifu2xModelTypeScale:
+			recommended_crop_size = info.scale.recommended_crop_size;
+			break;
+		case Waifu2x::eWaifu2xModelTypeNoiseScale:
+			recommended_crop_size = info.noise_scale.recommended_crop_size;
+			break;
+		case Waifu2x::eWaifu2xModelTypeAutoScale:
+			recommended_crop_size = info.noise_scale.recommended_crop_size;
+			break;
+		}
+
+		if (recommended_crop_size > 0)
+		{
+			tstring str(to_tstring(recommended_crop_size));
+			SendMessage(hcrop, CB_ADDSTRING, 0, (LPARAM)str.c_str());
+			isRecommendedCropSize = true;
+		}
+	}
+
+	if (list.size() > 0)
+		SendMessage(hcrop, CB_ADDSTRING, 0, (LPARAM)TEXT("-----------------------"));
+
 	int mindiff = INT_MAX;
 	int defaultIndex = -1;
 	for (int i = 0; i < list.size(); i++)
 	{
 		const int n = list[i];
 
+		if (n % info.force_divisible_crop_size != 0) // このモデルでは設定できないCropSize
+			continue;
+
 		tstring str(to_tstring(n));
-		SendMessage(hcrop, CB_ADDSTRING, 0, (LPARAM)str.c_str());
+		const int index = SendMessage(hcrop, CB_ADDSTRING, 0, (LPARAM)str.c_str());
 
 		const int diff = abs(DefaultCommonDivisor - n);
 		if (DefaultCommonDivisorRange.first <= n && n <= DefaultCommonDivisorRange.second && diff < mindiff)
 		{
 			mindiff = diff;
-			defaultIndex = i;
+			defaultIndex = index;
 		}
 	}
 
@@ -546,6 +590,9 @@ void DialogEvent::SetCropSizeList(const boost::filesystem::path & input_path)
 	int defaultListIndex = -1;
 	for (const auto n : CropSizeList)
 	{
+		if (n % info.force_divisible_crop_size != 0) // このモデルでは設定できないCropSize
+			continue;
+
 		tstring str(to_tstring(n));
 		const int index = SendMessage(hcrop, CB_ADDSTRING, 0, (LPARAM)str.c_str());
 
@@ -560,6 +607,9 @@ void DialogEvent::SetCropSizeList(const boost::filesystem::path & input_path)
 	if (defaultIndex == -1)
 		defaultIndex = defaultListIndex;
 
+	if(isRecommendedCropSize)
+		defaultIndex = 0;
+		 
 	if (GetWindowTextLength(hcrop) == 0)
 		SendMessage(hcrop, CB_SETCURSEL, defaultIndex, 0);
 }
@@ -839,7 +889,7 @@ void DialogEvent::ProcessWaifu2x()
 
 			ret = w.waifu2x(p.first, p.second, ScaleRatio, ScaleWidth, ScaleHeight, [this]()
 			{
-				return cancelFlag;
+				return cancelFlag.load();
 			}, crop_size, crop_size, output_quality, output_depth, use_tta, batch_size);
 
 			num++;
@@ -1096,6 +1146,8 @@ void DialogEvent::SaveIni(const bool isSyncMember)
 
 	WritePrivateProfileString(TEXT("Setting"), TEXT("LastInputDirFix"), tInputDirFix.c_str(), getTString(SettingFilePath).c_str());
 	WritePrivateProfileString(TEXT("Setting"), TEXT("LastOutputDirFix"), tOutputDirFix.c_str(), getTString(SettingFilePath).c_str());
+
+	WritePrivateProfileString(TEXT("Setting"), TEXT("LastBatchSize"), to_tstring(batch_size).c_str(), getTString(SettingFilePath).c_str());
 }
 
 struct stFindParam
@@ -1576,6 +1628,7 @@ void DialogEvent::SetWindowTextLang()
 	SET_WINDOW_TEXT(IDC_BUTTON_OUTPUT_REF);
 	SET_WINDOW_TEXT(IDC_BUTTON_APP_SETTING);
 	SET_WINDOW_TEXT(IDC_BUTTON_CLEAR_OUTPUT_DIR);
+	SET_WINDOW_TEXT(IDC_STATIC_BATCH_SIZE);
 
 #undef SET_WINDOW_TEXT
 
@@ -1587,11 +1640,10 @@ void DialogEvent::SetWindowTextLang()
 		SendMessage(hwndCombo, CB_DELETESTRING, 0, 0);
 	}
 
-	SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(L"IDC_RADIO_MODEL_UPCONV_RGB").c_str());
-	SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(L"IDC_RADIO_MODEL_UPCONV_PHOTO").c_str());
-	SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(L"IDC_RADIO_MODEL_RGB").c_str());
-	SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(L"IDC_RADIO_MODEL_PHOTO").c_str());
-	SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(L"IDC_RADIO_MODEL_Y").c_str());
+	for (int i = 0; i < eModelTypeEnd; i++)
+	{
+		SendMessage(hwndCombo, CB_ADDSTRING, 0, (LPARAM)langStringList.GetString(ModelTitleLangKeyList[i].c_str()).c_str());
+	}
 
 	SendMessage(GetDlgItem(dh, IDC_COMBO_MODEL), CB_SETCURSEL, cur, 0);
 }
@@ -1774,28 +1826,18 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 	}
 
 	{
-		HWND hcrop = GetDlgItem(dh, IDC_COMBO_CROP_SIZE);
+		HWND hbatch = GetDlgItem(dh, IDC_COMBO_BATCH_SIZE);
 
-		SendMessage(hcrop, CB_ADDSTRING, 0, (LPARAM)TEXT("-----------------------"));
-
-		// CropSizeListの値を追加していく
+		// バッチサイズリストに数列を突っ込んでいく
 		int mindiff = INT_MAX;
 		int defaultListIndex = -1;
-		for (const auto n : CropSizeList)
+		for(int i = 1; i <= MaxBatchSizeList; i++)
 		{
-			tstring str(to_tstring(n));
-			const int index = SendMessage(hcrop, CB_ADDSTRING, 0, (LPARAM)str.c_str());
-
-			const int diff = abs(DefaultCommonDivisor - n);
-			if (DefaultCommonDivisorRange.first <= n && n <= DefaultCommonDivisorRange.second && diff < mindiff)
-			{
-				mindiff = diff;
-				defaultListIndex = index;
-			}
+			tstring str(to_tstring(i));
+			SendMessage(hbatch, CB_ADDSTRING, 0, (LPARAM)str.c_str());
 		}
 
-		if (GetWindowTextLength(hcrop) == 0)
-			SendMessage(hcrop, CB_SETCURSEL, defaultListIndex, 0);
+		SendMessage(hbatch, CB_SETCURSEL, 0, 0);
 	}
 
 	tstring tScaleRatio;
@@ -1847,7 +1889,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		tmp[_countof(tmp) - 1] = TEXT('\0');
 		tprcess = tmp;
 
-		modelType = (eModelType)GetPrivateProfileInt(TEXT("Setting"), TEXT("LastModel"), 0, getTString(SettingFilePath).c_str());
+		modelType = (eModelType)GetPrivateProfileInt(TEXT("Setting"), TEXT("LastModel"), DefaultModel, getTString(SettingFilePath).c_str());
 
 		use_tta = GetPrivateProfileInt(TEXT("Setting"), TEXT("LastUseTTA"), 0, getTString(SettingFilePath).c_str()) != 0;
 
@@ -1875,6 +1917,8 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		GetPrivateProfileString(TEXT("Setting"), TEXT("LastOutputDirFix"), TEXT(""), tmp, _countof(tmp), getTString(SettingFilePath).c_str());
 		tmp[_countof(tmp) - 1] = TEXT('\0');
 		tOutputDirFix = tmp;
+
+		batch_size = GetPrivateProfileInt(TEXT("Setting"), TEXT("LastBatchSize"), 1, getTString(SettingFilePath).c_str());
 	}
 
 	TCHAR *ptr = nullptr;
@@ -2026,25 +2070,60 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 	}
 
 	int index = 0;
-	if (modelType == eModelTypeUpConvRGB)
-		index = 0;
-	else if (modelType == eModelTypeUpConvPhoto)
-		index = 1;
-	else if (modelType == eModelTypeRGB)
-		index = 2;
-	else if (modelType == eModelTypePhoto)
-		index = 3;
-	else if (modelType == eModelTypeY)
-		index = 4;
-	else
-		index = 0;
+	for (int i = 0; i < eModelTypeEnd; i++)
+	{
+		if (modelType == i)
+		{
+			index = i;
+			break;
+		}
+	}
 
 	SendMessage(GetDlgItem(dh, IDC_COMBO_MODEL), CB_SETCURSEL, index, 0);
+
+	{
+		HWND hcrop = GetDlgItem(dh, IDC_COMBO_CROP_SIZE);
+
+		SendMessage(hcrop, CB_ADDSTRING, 0, (LPARAM)TEXT("-----------------------"));
+
+		const auto model_dir = ModelPathList[index];
+
+		Waifu2x::stInfo info;
+		if (!Waifu2x::GetInfo(model_dir, info))
+			info.force_divisible_crop_size = 1;
+
+		// CropSizeListの値を追加していく
+		int mindiff = INT_MAX;
+		int defaultListIndex = -1;
+		for (const auto n : CropSizeList)
+		{
+			if (n % info.force_divisible_crop_size != 0) // このモデルでは設定できないCropSize
+				continue;
+
+			tstring str(to_tstring(n));
+			const int index = SendMessage(hcrop, CB_ADDSTRING, 0, (LPARAM)str.c_str());
+
+			const int diff = abs(DefaultCommonDivisor - n);
+			if (DefaultCommonDivisorRange.first <= n && n <= DefaultCommonDivisorRange.second && diff < mindiff)
+			{
+				mindiff = diff;
+				defaultListIndex = index;
+			}
+		}
+
+		if (GetWindowTextLength(hcrop) == 0)
+			SendMessage(hcrop, CB_SETCURSEL, defaultListIndex, 0);
+	}
 
 	if (use_tta)
 		SendMessage(GetDlgItem(hWnd, IDC_CHECK_TTA), BM_SETCHECK, BST_CHECKED, 0);
 	else
 		SendMessage(GetDlgItem(hWnd, IDC_CHECK_TTA), BM_SETCHECK, BST_UNCHECKED, 0);
+
+	if (1 <= batch_size && batch_size <= MaxBatchSizeList)
+	{
+		SendMessage(GetDlgItem(dh, IDC_COMBO_BATCH_SIZE), CB_SETCURSEL, batch_size - 1, 0);
+	}
 
 	SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SCALE_RATIO), tScaleRatio.c_str());
 	SetWindowText(GetDlgItem(hWnd, IDC_EDIT_SCALE_WIDTH), tScaleWidth.c_str());
@@ -2190,14 +2269,13 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 				false, 0, &cmdNoOverwriteConstraint, cmd);
 
 			std::vector<std::wstring> cmdModelTypeConstraintV;
-			cmdModelTypeConstraintV.push_back(L"upconv_7_anime_style_art_rgb");
-			cmdModelTypeConstraintV.push_back(L"upconv_7_photo");
-			cmdModelTypeConstraintV.push_back(L"anime_style_art_rgb");
-			cmdModelTypeConstraintV.push_back(L"photo");
-			cmdModelTypeConstraintV.push_back(L"anime_style_art_y");
+			for (int i = 0; i < eModelTypeEnd; i++)
+			{
+				cmdModelTypeConstraintV.push_back(ModelTypeList[i]);
+			}
 			TCLAPW::ValuesConstraint<std::wstring> cmdModelTypeConstraint(cmdModelTypeConstraintV);
 			TCLAPW::ValueArg<std::wstring> cmdModelType(L"y", L"model_type", L"model type",
-				false, L"upconv_7_anime_style_art_rgb", &cmdModelTypeConstraint, cmd);
+				false, DefaultModelType, &cmdModelTypeConstraint, cmd);
 
 			// definition of command line argument : end
 
@@ -2416,7 +2494,8 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 
 				if (cmdBatchSizeFile.isSet())
 				{
-					batch_size = cmdBatchSizeFile.getValue();
+					SetWindowText(GetDlgItem(dh, IDC_COMBO_CROP_SIZE), to_tstring(cmdCropSizeFile.getValue()).c_str());
+					//batch_size = cmdBatchSizeFile.getValue();
 
 					isSetParam = true;
 				}
@@ -2452,18 +2531,14 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 				if (cmdModelType.isSet())
 				{
 					int index = 0;
-					if (cmdModelType.getValue() == L"upconv_7_anime_style_art_rgb")
-						index = 0;
-					else if (cmdModelType.getValue() == L"upconv_7_photo")
-						index = 1;
-					else if (cmdModelType.getValue() == L"anime_style_art_rgb")
-						index = 2;
-					else if (cmdModelType.getValue() == L"photo")
-						index = 3;
-					else if (cmdModelType.getValue() == L"anime_style_art_y")
-						index = 4;
-					else
-						index = 0;
+					for (int i = 0; i < eModelTypeEnd; i++)
+					{
+						if (cmdModelType.getValue() == ModelTypeList[i])
+						{
+							index = i;
+							break;
+						}
+					}
 
 					SendMessage(GetDlgItem(dh, IDC_COMBO_MODEL), CB_SETCURSEL, index, 0);
 
@@ -2664,6 +2739,15 @@ void DialogEvent::CheckCUDNN(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpD
 		break;
 	default:
 		MessageBox(dh, langStringList.GetString(L"MessagecuDNNDefautlError").c_str(), langStringList.GetString(L"MessageTitleResult").c_str(), MB_OK | MB_ICONERROR);
+	}
+}
+
+void DialogEvent::OnModelChange(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
+{
+	if (HIWORD(wParam) == CBN_SELCHANGE)
+	{
+		OnSetInputFilePath();
+		UpdateAddString(hWnd, wParam, lParam, lpData);
 	}
 }
 
