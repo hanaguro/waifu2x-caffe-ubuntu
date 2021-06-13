@@ -11,7 +11,7 @@ CDialog::CDialog() : mInitFunc(nullptr), mInitData(nullptr)
 
 void CDialog::SetEventCallBack(const EventFunc &func, const LPVOID lpData, const UINT uMsg)
 {
-	if(uMsg == WM_INITDIALOG) // “Á•Ê‚Éˆ—‚ğ‹²‚Ü‚È‚­‚Ä‚Í‚¢‚¯‚È‚¢ŠÖŒWã
+	if(uMsg == WM_INITDIALOG) // ç‰¹åˆ¥ã«å‡¦ç†ã‚’æŒŸã¾ãªãã¦ã¯ã„ã‘ãªã„é–¢ä¿‚ä¸Š
 	{
 		mInitFunc = func;
 		mInitData = lpData;

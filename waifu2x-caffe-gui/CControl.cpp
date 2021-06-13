@@ -61,23 +61,23 @@ LRESULT CControl::SubProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	if(it != mEventMap.end())
 		return it->second.pfunc(hWnd, wParam, lParam, OrgSubWnd, it->second.lpData);
 	else
-		//Ž©•ª‚Åˆ—‚µ‚È‚¢‚à‚Ì‚ÍŒ³‚ÌƒvƒƒV[ƒWƒƒ‚É‚â‚Á‚Ä‚à‚ç‚¤
+		//è‡ªåˆ†ã§å‡¦ç†ã—ãªã„ã‚‚ã®ã¯å…ƒã®ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£ã«ã‚„ã£ã¦ã‚‚ã‚‰ã†
 		return CallWindowProc(OrgSubWnd, hWnd, uMsg, wParam, lParam);
 }
 
-// ƒ_ƒCƒAƒƒOƒvƒƒV[ƒWƒƒ(Œ`Ž®ã) 
+// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£(å½¢å¼ä¸Š) 
 LRESULT CALLBACK CControl::DispatchSubProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	// ƒ_ƒCƒAƒƒO‚Ì 32 ƒrƒbƒg®”‚ÉŠi”[‚³‚ê‚Ä‚¢‚é  
-	// this ƒ|ƒCƒ“ƒ^‚ðŽæ‚è‚¾‚·
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã® 32 ãƒ“ãƒƒãƒˆæ•´æ•°ã«æ ¼ç´ã•ã‚Œã¦ã„ã‚‹  
+	// this ãƒã‚¤ãƒ³ã‚¿ã‚’å–ã‚Šã ã™
 	CControl *pcControl = (CControl *)GetWindowLongPtr(hWnd, GWLP_USERDATA); 
 	if(pcControl == NULL)
 	{
-		// ‚½‚Ô‚ñ‚±‚±‚ªŽÀs‚³‚ê‚é‚±‚Æ‚Í‚È‚¢
+		// ãŸã¶ã‚“ã“ã“ãŒå®Ÿè¡Œã•ã‚Œã‚‹ã“ã¨ã¯ãªã„
 		return NULL;
 	}
 
-	// ƒƒ“ƒoŠÖ”‚Ìƒ_ƒCƒAƒƒOƒvƒƒV[ƒWƒƒ‚ðŒÄ‚Ño‚·
+	// ãƒ¡ãƒ³ãƒé–¢æ•°ã®ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£ã‚’å‘¼ã³å‡ºã™
 	return pcControl->SubProc(hWnd, uMsg, wParam, lParam);
 }
 

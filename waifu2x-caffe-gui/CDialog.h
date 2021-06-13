@@ -9,8 +9,8 @@
 class CControl;
 
 
-// ����
-// �C�x���g�n���h����SetWindowLong��GWL_USERDATA�������������ꍇ���������Ȃ�
+// 注意
+// イベントハンドラでSetWindowLongでGWL_USERDATAを書き換えた場合おかしくなる
 class CDialog: public CDialogBase
 {
 private:
@@ -61,33 +61,33 @@ private:
 	EventFunc mInitFunc;
 	LPVOID mInitData;
 
-	// �R�s�[�A����̋֎~
+	// コピー、代入の禁止
 	CDialog(const CDialog&);
 	CDialog& operator =(const CDialog&);
 
-	// �_�C�A���O�v���V�[�W��
+	// ダイアログプロシージャ
 	INT_PTR DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void CommandCallBack(HWND hWnd, WPARAM wParam, LPARAM lParam);
 	void SetControl(HWND hWnd);
 
 public:
-	// ��̃��b�Z�[�W�ɂ���̊֐������o�^�ł��Ȃ�.
-	// ���łɂ������ꍇ�͏㏑�������.
-	// WM_COMMAND��o�^�����ꍇ�ASetCommandCallBack�͎g���Ȃ��Ȃ�.
-	// lpData�͓o�^�����֐��ɗ^����D���Ȉ���.
-	// �o�^�ł���֐��́A
+	// 一つのメッセージにつき一つの関数しか登録できない.
+	// すでにあった場合は上書きされる.
+	// WM_COMMANDを登録した場合、SetCommandCallBackは使えなくなる.
+	// lpDataは登録した関数に与える好きな引数.
+	// 登録できる関数は、
 	// BOOL Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData);
-	// �̂悤�Ȋ֐�.
-	// �_�C�A���O�ł�TRUE��Ԃ�����.
+	// のような関数.
+	// ダイアログではTRUEを返すこと.
 	void SetEventCallBack(const EventFunc &func, const LPVOID lpData, const UINT uMsg);
 
-	// �{�^���������ꂽ�Ƃ��Ȃǂ̂���
-	// lpData�͓o�^�����֐��ɗ^����D���Ȉ���
+	// ボタンが押されたときなどのため
+	// lpDataは登録した関数に与える好きな引数
 	void SetCommandCallBack(const EventFunc &func, const LPVOID lpData, const UINT ResourceID);
 
-	// �{�^���Ȃǂ̃T�u�N���X������R���g���[����ǉ�����
+	// ボタンなどのサブクラス化するコントロールを追加する
 	void AddControl(CControl *pfunc);
 
-	// �R���X�g���N�^(�������Ȃ�)
+	// コンストラクタ(何もしない)
 	CDialog();
 };

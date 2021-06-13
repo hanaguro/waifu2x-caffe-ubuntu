@@ -12,11 +12,11 @@ private:
 
 	bool mIsRequestDenoise;
 
-	cv::Mat mTmpImageRGB; // RGB(‚ ‚é‚¢‚ÍY)
-	cv::Mat mTmpImageA; // ƒ¿ƒ`ƒƒƒ“ƒlƒ‹
-	cv::Mat mTmpImageAOneColor; // ƒ¿ƒ`ƒƒƒ“ƒlƒ‹(’PF‚Ìê‡g‚í‚ê‚é)
+	cv::Mat mTmpImageRGB; // RGB(ã‚ã‚‹ã„ã¯Y)
+	cv::Mat mTmpImageA; // Î±ãƒãƒ£ãƒ³ãƒãƒ«
+	cv::Mat mTmpImageAOneColor; // Î±ãƒãƒ£ãƒ³ãƒãƒ«(å˜è‰²ã®å ´åˆä½¿ã‚ã‚Œã‚‹)
 
-	cv::Mat mEndImage; // Š®¬‚µ‚½‰æ‘œ
+	cv::Mat mEndImage; // å®Œæˆã—ãŸç”»åƒ
 
 	int pad_w1;
 	int pad_h1;
@@ -48,7 +48,7 @@ private:
 
 	static Waifu2x::eWaifu2xError WriteMat(const cv::Mat &im, const boost::filesystem::path &output_file, const boost::optional<int> &output_quality);
 
-	// im(1ch)‚ª’PF‚Å\¬‚³‚ê‚Ä‚¢‚é‚©”»’è
+	// im(1ch)ãŒå˜è‰²ã§æ§‹æˆã•ã‚Œã¦ã„ã‚‹ã‹åˆ¤å®š
 	static bool IsOneColor(const cv::Mat &im);
 
 	void ConvertToNetFormat(const int input_plane, const int alpha_offset);
@@ -58,13 +58,13 @@ private:
 		const int crop_w, const int crop_h, cv::Mat &output);
 	Waifu2x::eWaifu2xError CreateZoomColorImage(const cv::Mat &float_image, const cv::Size_<int> &zoom_size, std::vector<cv::Mat> &cubic_planes);
 
-	// Šg‘åAƒpƒfƒBƒ“ƒO‚³‚ê‚½‰æ‘œ‚ğæ“¾
-	// ‚±‚ÌŠÖ”‚ğŒÄ‚Ño‚µ‚½ŒãAmTmpImageRGB‚Í‹ó‚É‚È‚é‚Ì‚Å’ˆÓ
+	// æ‹¡å¤§ã€ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°ã•ã‚ŒãŸç”»åƒã‚’å–å¾—
+	// ã“ã®é–¢æ•°ã‚’å‘¼ã³å‡ºã—ãŸå¾Œã€mTmpImageRGBã¯ç©ºã«ãªã‚‹ã®ã§æ³¨æ„
 	void GetScalePaddingedImage(cv::Mat &in, cv::Mat &out, cv::Size_<int> &size, const int net_offset, const int outer_padding,
 		const int crop_w, const int crop_h, const int scale);
 
-	// •ÏŠ·‚³‚ê‚½‰æ‘œ‚ğİ’è
-	// size: GetScalePaddingedImage()‚Åæ“¾‚µ‚½size
+	// å¤‰æ›ã•ã‚ŒãŸç”»åƒã‚’è¨­å®š
+	// size: GetScalePaddingedImage()ã§å–å¾—ã—ãŸsize
 	void SetReconstructedImage(cv::Mat &dst, cv::Mat &src, const cv::Size_<int> &size, const int inner_scale);
 
 	void DeconvertFromNetFormat(const int input_plane);
@@ -85,13 +85,13 @@ public:
 
 	Waifu2x::eWaifu2xError Load(const boost::filesystem::path &input_file);
 
-	// source: (4ƒ`ƒƒƒ“ƒlƒ‹‚Ìê‡‚Í)RGBA‚È‰æ‘f”z—ñ
-	// dest: (4ƒ`ƒƒƒ“ƒlƒ‹‚Ìê‡‚Í)ˆ—‚µ‚½RGBA‚È‰æ‘f”z—ñ
-	// width: width‚Ìc•
-	// height: height‚Ì‰¡•
-	// channel: source‚Ìƒ`ƒƒƒ“ƒlƒ‹”
-	// stride: source‚ÌƒXƒgƒ‰ƒCƒh(ƒoƒCƒg’PˆÊ)
-	// source‚ÍPostprocess()‚ªI‚í‚é‚Ü‚Å‘¶İ‚µ‚Ä‚¢‚é•K—v‚ª‚ ‚é
+	// source: (4ãƒãƒ£ãƒ³ãƒãƒ«ã®å ´åˆã¯)RGBAãªç”»ç´ é…åˆ—
+	// dest: (4ãƒãƒ£ãƒ³ãƒãƒ«ã®å ´åˆã¯)å‡¦ç†ã—ãŸRGBAãªç”»ç´ é…åˆ—
+	// width: widthã®ç¸¦å¹…
+	// height: heightã®æ¨ªå¹…
+	// channel: sourceã®ãƒãƒ£ãƒ³ãƒãƒ«æ•°
+	// stride: sourceã®ã‚¹ãƒˆãƒ©ã‚¤ãƒ‰(ãƒã‚¤ãƒˆå˜ä½)
+	// sourceã¯Postprocess()ãŒçµ‚ã‚ã‚‹ã¾ã§å­˜åœ¨ã—ã¦ã„ã‚‹å¿…è¦ãŒã‚ã‚‹
 	Waifu2x::eWaifu2xError Load(const void* source, const int width, const int height, const int channel, const int stride);
 
 	Factor GetScaleFromWidth(const int width) const;
@@ -99,30 +99,30 @@ public:
 
 	bool RequestDenoise() const;
 
-	// ‘Oˆ—
-	// RGBƒ‚ƒfƒ‹‚Ìê‡‚Í‚±‚ê‚ªI‚í‚Á‚½‚É‚ÍmOrgFloatImage‚ª‹ó‚É‚È‚Á‚Ä‚¢‚é‚Ì‚Å’ˆÓ
+	// å‰å‡¦ç†
+	// RGBãƒ¢ãƒ‡ãƒ«ã®å ´åˆã¯ã“ã‚ŒãŒçµ‚ã‚ã£ãŸæ™‚ã«ã¯mOrgFloatImageãŒç©ºã«ãªã£ã¦ã„ã‚‹ã®ã§æ³¨æ„
 	void Preprocess(const int input_plane, const int net_offset);
 
 	bool HasAlpha() const;
 
-	// Šg‘åAƒpƒfƒBƒ“ƒO‚³‚ê‚½‰æ‘œ‚ğæ“¾
-	// ‚±‚ÌŠÖ”‚ğŒÄ‚Ño‚µ‚½ŒãAmTmpImageRGB‚Í‹ó‚É‚È‚é‚Ì‚Å’ˆÓ
+	// æ‹¡å¤§ã€ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°ã•ã‚ŒãŸç”»åƒã‚’å–å¾—
+	// ã“ã®é–¢æ•°ã‚’å‘¼ã³å‡ºã—ãŸå¾Œã€mTmpImageRGBã¯ç©ºã«ãªã‚‹ã®ã§æ³¨æ„
 	void GetScalePaddingedRGB(cv::Mat &im, cv::Size_<int> &size, const int net_offset, const int outer_padding,
 		const int crop_w, const int crop_h, const int scale);
 
-	// •ÏŠ·‚³‚ê‚½‰æ‘œ‚ğİ’è
-	// ‚±‚ÌŠÖ”‚ğŒÄ‚Ño‚µ‚½ŒãAim‚Í‹ó‚É‚È‚é‚Ì‚Å’ˆÓ
-	// size: GetScalePaddingedImage()‚Åæ“¾‚µ‚½size
+	// å¤‰æ›ã•ã‚ŒãŸç”»åƒã‚’è¨­å®š
+	// ã“ã®é–¢æ•°ã‚’å‘¼ã³å‡ºã—ãŸå¾Œã€imã¯ç©ºã«ãªã‚‹ã®ã§æ³¨æ„
+	// size: GetScalePaddingedImage()ã§å–å¾—ã—ãŸsize
 	void SetReconstructedRGB(cv::Mat &im, const cv::Size_<int> &size, const int inner_scale);
 
-	// Šg‘åAƒpƒfƒBƒ“ƒO‚³‚ê‚½‰æ‘œ‚ğæ“¾
-	// ‚±‚ÌŠÖ”‚ğŒÄ‚Ño‚µ‚½ŒãAmTmpImageA‚Í‹ó‚É‚È‚é‚Ì‚Å’ˆÓ
+	// æ‹¡å¤§ã€ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°ã•ã‚ŒãŸç”»åƒã‚’å–å¾—
+	// ã“ã®é–¢æ•°ã‚’å‘¼ã³å‡ºã—ãŸå¾Œã€mTmpImageAã¯ç©ºã«ãªã‚‹ã®ã§æ³¨æ„
 	void GetScalePaddingedA(cv::Mat &im, cv::Size_<int> &size, const int net_offset, const int outer_padding,
 		const int crop_w, const int crop_h, const int scale);
 
-	// Šg‘å‚³‚ê‚½‰æ‘œ‚ğİ’è
-	// ‚±‚ÌŠÖ”‚ğŒÄ‚Ño‚µ‚½ŒãAim‚Í‹ó‚É‚È‚é‚Ì‚Å’ˆÓ
-	// size: GetScalePaddingedImage()‚Åæ“¾‚µ‚½size
+	// æ‹¡å¤§ã•ã‚ŒãŸç”»åƒã‚’è¨­å®š
+	// ã“ã®é–¢æ•°ã‚’å‘¼ã³å‡ºã—ãŸå¾Œã€imã¯ç©ºã«ãªã‚‹ã®ã§æ³¨æ„
+	// size: GetScalePaddingedImage()ã§å–å¾—ã—ãŸsize
 	void SetReconstructedA(cv::Mat &im, const cv::Size_<int> &size, const int inner_scale);
 
 	void Postprocess(const int input_plane, const Factor scale, const int depth);

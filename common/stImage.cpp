@@ -16,7 +16,7 @@ const int YToRGBConverInversetMode = CV_RGB2GRAY;
 const int BGRToYConvertMode = CV_BGR2YUV;
 const int BGRToConvertInverseMode = CV_YUV2BGR;
 
-// float‚È‰æ‘œ‚ğuint8_t‚È‰æ‘œ‚É•ÏŠ·‚·‚éÛ‚ÌlÌŒÜ“ü‚Ég‚¤’l
+// floatãªç”»åƒã‚’uint8_tãªç”»åƒã«å¤‰æ›ã™ã‚‹éš›ã®å››æ¨äº”å…¥ã«ä½¿ã†å€¤
 // https://github.com/nagadomi/waifu2x/commit/797b45ae23665a1c5e3c481c018e48e6f0d0e383
 const double clip_eps8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5);
 const double clip_eps16 = (1.0 / 65535.0) * 0.5 - (1.0e-7 * (1.0 / 65535.0) * 0.5);
@@ -123,7 +123,7 @@ int stImage::DepthBitToCVDepth(const int depth_bit)
 		return CV_32F;
 	}
 
-	// •s–¾‚¾‚¯‚Ç‚Æ‚è‚ ‚¦‚¸CV_8U‚ğ•Ô‚µ‚Ä‚¨‚­
+	// ä¸æ˜ã ã‘ã©ã¨ã‚Šã‚ãˆãšCV_8Uã‚’è¿”ã—ã¦ãŠã
 	return CV_8U;
 }
 
@@ -141,7 +141,7 @@ double stImage::GetValumeMaxFromCVDepth(const int cv_depth)
 		return 1.0;
 	}
 
-	// •s–¾‚¾‚¯‚Ç‚Æ‚è‚ ‚¦‚¸255.0‚ğ•Ô‚µ‚Ä‚¨‚­
+	// ä¸æ˜ã ã‘ã©ã¨ã‚Šã‚ãˆãš255.0ã‚’è¿”ã—ã¦ãŠã
 	return 255.0;
 }
 
@@ -159,26 +159,26 @@ double stImage::GetEPS(const int cv_depth)
 		return clip_eps32;
 	}
 
-	// •s–¾‚¾‚¯‚Ç‚Æ‚è‚ ‚¦‚¸clip_eps8•Ô‚µ‚Ä‚¨‚­
+	// ä¸æ˜ã ã‘ã©ã¨ã‚Šã‚ãˆãšclip_eps8è¿”ã—ã¦ãŠã
 	return clip_eps8;
 }
 
 
 Waifu2x::eWaifu2xError stImage::AlphaMakeBorder(std::vector<cv::Mat> &planes, const cv::Mat &alpha, const int offset)
 {
-	// ‚±‚ÌƒJ[ƒlƒ‹‚Æ‰æ‘œ‚Ìô‚İ‚ğs‚¤‚ÆA(x, y)‚ğ’†S‚Æ‚µ‚½3~3—Ìˆæ‚Ì‡Œv’l‚ª‹‚Ü‚é
+	// ã“ã®ã‚«ãƒ¼ãƒãƒ«ã¨ç”»åƒã®ç•³è¾¼ã¿ã‚’è¡Œã†ã¨ã€(x, y)ã‚’ä¸­å¿ƒã¨ã—ãŸ3Ã—3é ˜åŸŸã®åˆè¨ˆå€¤ãŒæ±‚ã¾ã‚‹
 	const static cv::Mat sum2d_kernel = (cv::Mat_<double>(3, 3) <<
 		1., 1., 1.,
 		1., 1., 1.,
 		1., 1., 1.);
 
 	cv::Mat mask;
-	cv::threshold(alpha, mask, 0.0, 1.0, cv::THRESH_BINARY); // ƒAƒ‹ƒtƒ@ƒ`ƒƒƒ“ƒlƒ‹‚ğ“ñ’l‰»‚µ‚Äƒ}ƒXƒN‚Æ‚µ‚Äˆµ‚¤
+	cv::threshold(alpha, mask, 0.0, 1.0, cv::THRESH_BINARY); // ã‚¢ãƒ«ãƒ•ã‚¡ãƒãƒ£ãƒ³ãƒãƒ«ã‚’äºŒå€¤åŒ–ã—ã¦ãƒã‚¹ã‚¯ã¨ã—ã¦æ‰±ã†
 
 	cv::Mat mask_nega;
-	cv::threshold(mask, mask_nega, 0.0, 1.0, cv::THRESH_BINARY_INV); // ”½“]‚µ‚½ƒ}ƒXƒNi’l‚ª1‚Ì‰ÓŠ‚ÍŠ®‘S“§–¾‚Å‚È‚¢—LŒø‚È‰æ‘f‚Æ‚È‚éj
+	cv::threshold(mask, mask_nega, 0.0, 1.0, cv::THRESH_BINARY_INV); // åè»¢ã—ãŸãƒã‚¹ã‚¯ï¼ˆå€¤ãŒ1ã®ç®‡æ‰€ã¯å®Œå…¨é€æ˜ã§ãªã„æœ‰åŠ¹ãªç”»ç´ ã¨ãªã‚‹ï¼‰
 
-	for (auto &p : planes) // Š®‘S‚É“§–¾‚ÈƒsƒNƒZƒ‹‚É‚ ‚éƒSƒ~‚ğæ‚é
+	for (auto &p : planes) // å®Œå…¨ã«é€æ˜ãªãƒ”ã‚¯ã‚»ãƒ«ã«ã‚ã‚‹ã‚´ãƒŸã‚’å–ã‚‹
 	{
 		p = p.mul(mask);
 	}
@@ -186,29 +186,29 @@ Waifu2x::eWaifu2xError stImage::AlphaMakeBorder(std::vector<cv::Mat> &planes, co
 	for (int i = 0; i < offset; i++)
 	{
 		cv::Mat mask_weight;
-		cv::filter2D(mask, mask_weight, -1, sum2d_kernel, cv::Point(-1, -1), 0, cv::BORDER_DEFAULT); // ƒ}ƒXƒN‚Ì3~3—Ìˆæ‚Ì‡Œv’l‚ğ‹‚ß‚é
+		cv::filter2D(mask, mask_weight, -1, sum2d_kernel, cv::Point(-1, -1), 0, cv::BORDER_DEFAULT); // ãƒã‚¹ã‚¯ã®3Ã—3é ˜åŸŸã®åˆè¨ˆå€¤ã‚’æ±‚ã‚ã‚‹
 
 		cv::Mat mask_nega_u8;
-		mask_nega.convertTo(mask_nega_u8, CV_8U, 255.0, clip_eps8); // mask_nega‚ÌCV_U8”ÅiOpenCV‚ÌAPIã•K—v‚É‚È‚éj
+		mask_nega.convertTo(mask_nega_u8, CV_8U, 255.0, clip_eps8); // mask_negaã®CV_U8ç‰ˆï¼ˆOpenCVã®APIä¸Šå¿…è¦ã«ãªã‚‹ï¼‰
 
-		for (auto &p : planes) // 1ƒ`ƒƒƒ“ƒlƒ‹‚¸‚Âˆ—
+		for (auto &p : planes) // 1ãƒãƒ£ãƒ³ãƒãƒ«ãšã¤å‡¦ç†
 		{
-			// ƒ`ƒƒƒ“ƒlƒ‹‚Ì3~3—Ìˆæ“à‚Ì—LŒø‰æ‘f‚Ì•½‹Ï’l‚ğ‹‚ß‚é
+			// ãƒãƒ£ãƒ³ãƒãƒ«ã®3Ã—3é ˜åŸŸå†…ã®æœ‰åŠ¹ç”»ç´ ã®å¹³å‡å€¤ã‚’æ±‚ã‚ã‚‹
 			cv::Mat border;
 			cv::filter2D(p, border, -1, sum2d_kernel, cv::Point(-1, -1), 0, cv::BORDER_DEFAULT);
 			border /= mask_weight;
 
-			// ƒ`ƒƒƒ“ƒlƒ‹‚Ì—LŒø‚È‰æ‘f‚Ì•”•ª‚ÉAŒvZ‚µ‚½•½‹Ï’l‚ğƒRƒs[
+			// ãƒãƒ£ãƒ³ãƒãƒ«ã®æœ‰åŠ¹ãªç”»ç´ ã®éƒ¨åˆ†ã«ã€è¨ˆç®—ã—ãŸå¹³å‡å€¤ã‚’ã‚³ãƒ”ãƒ¼
 			border.copyTo(p, mask_nega_u8);
 		}
 
-		// ƒ}ƒXƒN‚ğ1‰ñ–c’£‚³‚¹‚½‚à‚Ì‚ğV‚µ‚¢ƒ}ƒXƒN‚Æ‚·‚é(ƒ}ƒXƒN‚Ì3~3—Ìˆæ‚Ì‡Œv’l‚ğ‹‚ß‚½‚à‚Ì‚Ì”ñ0—Ìˆæ‚ÍAƒ}ƒXƒN‚ğ1‰ñ–c’£‚³‚¹‚½‚à‚Ì‚Ì—Ìˆæ‚É“™‚µ‚¢)
+		// ãƒã‚¹ã‚¯ã‚’1å›è†¨å¼µã•ã›ãŸã‚‚ã®ã‚’æ–°ã—ã„ãƒã‚¹ã‚¯ã¨ã™ã‚‹(ãƒã‚¹ã‚¯ã®3Ã—3é ˜åŸŸã®åˆè¨ˆå€¤ã‚’æ±‚ã‚ãŸã‚‚ã®ã®é0é ˜åŸŸã¯ã€ãƒã‚¹ã‚¯ã‚’1å›è†¨å¼µã•ã›ãŸã‚‚ã®ã®é ˜åŸŸã«ç­‰ã—ã„)
 		cv::threshold(mask_weight, mask, 0.0, 1.0, cv::THRESH_BINARY);
-		// V‚µ‚¢ƒ}ƒXƒN‚Ì”½“]‚µ‚½ƒ}ƒXƒN‚ğŒvZ
+		// æ–°ã—ã„ãƒã‚¹ã‚¯ã®åè»¢ã—ãŸãƒã‚¹ã‚¯ã‚’è¨ˆç®—
 		cv::threshold(mask, mask_nega, 0.0, 1.0, cv::THRESH_BINARY_INV);
 	}
 
-	// ‰æ‘f‚ğ0‚©‚ç1‚ÉƒNƒŠƒbƒsƒ“ƒO
+	// ç”»ç´ ã‚’0ã‹ã‚‰1ã«ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°
 	for (auto &p : planes)
 	{
 		cv::threshold(p, p, 1.0, 1.0, cv::THRESH_TRUNC);
@@ -218,7 +218,7 @@ Waifu2x::eWaifu2xError stImage::AlphaMakeBorder(std::vector<cv::Mat> &planes, co
 	return Waifu2x::eWaifu2xError_OK;
 }
 
-// ‰æ‘œ‚ğ“Ç‚İ‚ñ‚Å’l‚ğ0.0f`1.0f‚Ì”ÍˆÍ‚É•ÏŠ·
+// ç”»åƒã‚’èª­ã¿è¾¼ã‚“ã§å€¤ã‚’0.0fã€œ1.0fã®ç¯„å›²ã«å¤‰æ›
 Waifu2x::eWaifu2xError stImage::LoadMat(cv::Mat &im, const boost::filesystem::path &input_file)
 {
 	cv::Mat original_image;
@@ -229,7 +229,7 @@ Waifu2x::eWaifu2xError stImage::LoadMat(cv::Mat &im, const boost::filesystem::pa
 			return Waifu2x::eWaifu2xError_FailedOpenInputFile;
 
 		const boost::filesystem::path ipext(input_file.extension());
-		if (!boost::iequals(ipext.string(), ".bmp")) // “Á’è‚Ìƒtƒ@ƒCƒ‹Œ`®‚Ìê‡OpenCV‚Å“Ç‚Ş‚ÆƒoƒO‚é‚±‚Æ‚ª‚ ‚é‚Ì‚ÅSTBI‚ğ—Dæ‚³‚¹‚é
+		if (!boost::iequals(ipext.string(), ".bmp")) // ç‰¹å®šã®ãƒ•ã‚¡ã‚¤ãƒ«å½¢å¼ã®å ´åˆOpenCVã§èª­ã‚€ã¨ãƒã‚°ã‚‹ã“ã¨ãŒã‚ã‚‹ã®ã§STBIã‚’å„ªå…ˆã•ã›ã‚‹
 		{
 			cv::Mat im(img_data.size(), 1, CV_8U, img_data.data());
 			original_image = cv::imdecode(im, cv::IMREAD_UNCHANGED);
@@ -304,7 +304,7 @@ Waifu2x::eWaifu2xError stImage::LoadMatBySTBI(cv::Mat &im, const std::vector<cha
 
 	if (comp >= 3)
 	{
-		// RGB‚¾‚©‚çBGR‚É•ÏŠ·
+		// RGBã ã‹ã‚‰BGRã«å¤‰æ›
 		for (int i = 0; i < y; i++)
 		{
 			for (int j = 0; j < x; j++)
@@ -329,7 +329,7 @@ cv::Mat stImage::ConvertToFloat(const cv::Mat &im)
 		break;
 
 	case CV_32F:
-		convert = im; // Œ³‚©‚ç0.0`1.0‚Ì‚Í‚¸‚È‚Ì‚Å•ÏŠ·‚Í•K—v‚È‚¢
+		convert = im; // å…ƒã‹ã‚‰0.0ã€œ1.0ã®ã¯ãšãªã®ã§å¤‰æ›ã¯å¿…è¦ãªã„
 		break;
 	}
 
@@ -385,7 +385,7 @@ Waifu2x::eWaifu2xError stImage::Load(const void* source, const int width, const 
 
 	cv::Mat original_image(cv::Size(width, height), CV_MAKETYPE(CV_8U, channel), (void *)source, stride);
 
-	if (original_image.channels() >= 3) // RGB‚È‚Ì‚ÅBGR‚É‚·‚é
+	if (original_image.channels() >= 3) // RGBãªã®ã§BGRã«ã™ã‚‹
 	{
 		std::vector<cv::Mat> planes;
 		cv::split(original_image, planes);
@@ -456,15 +456,15 @@ bool stImage::IsOneColor(const cv::Mat & im)
 
 void stImage::ConvertToNetFormat(const int input_plane, const int alpha_offset)
 {
-	if (input_plane == 1) // Yƒ‚ƒfƒ‹
+	if (input_plane == 1) // Yãƒ¢ãƒ‡ãƒ«
 	{
-		if (mOrgFloatImage.channels() == 1) // 1ch‚¾‚¯‚È‚Ì‚Å‚»‚Ì‚Ü‚Ü
+		if (mOrgFloatImage.channels() == 1) // 1chã ã‘ãªã®ã§ãã®ã¾ã¾
 			mTmpImageRGB = mOrgFloatImage;
-		else // BGR‚È‚Ì‚Å•ÏŠ·
+		else // BGRãªã®ã§å¤‰æ›
 		{
 			mTmpImageRGB = mOrgFloatImage;
 
-			if (mTmpImageRGB.channels() == 4) // BGRA‚È‚Ì‚ÅA‚¾‚¯æ‚èo‚·
+			if (mTmpImageRGB.channels() == 4) // BGRAãªã®ã§Aã ã‘å–ã‚Šå‡ºã™
 			{
 				std::vector<cv::Mat> planes;
 				cv::split(mTmpImageRGB, planes);
@@ -472,38 +472,38 @@ void stImage::ConvertToNetFormat(const int input_plane, const int alpha_offset)
 				mTmpImageA = planes[3];
 				planes.resize(3);
 
-				AlphaMakeBorder(planes, mTmpImageA, alpha_offset); // “§–¾‚ÈƒsƒNƒZƒ‹‚Æ•s“§–¾‚ÈƒsƒNƒZƒ‹‚Ì‹«ŠE•”•ª‚ÌF‚ğL‚°‚é
+				AlphaMakeBorder(planes, mTmpImageA, alpha_offset); // é€æ˜ãªãƒ”ã‚¯ã‚»ãƒ«ã¨ä¸é€æ˜ãªãƒ”ã‚¯ã‚»ãƒ«ã®å¢ƒç•Œéƒ¨åˆ†ã®è‰²ã‚’åºƒã’ã‚‹
 
-				// CreateBrightnessImage()‚ÅBGR‚©‚çY‚É•ÏŠ·‚·‚é‚Ì‚Å“Á‚ÉRGB‚É•Ï‚¦‚½‚è‚Í‚µ‚È‚¢
+				// CreateBrightnessImage()ã§BGRã‹ã‚‰Yã«å¤‰æ›ã™ã‚‹ã®ã§ç‰¹ã«RGBã«å¤‰ãˆãŸã‚Šã¯ã—ãªã„
 				cv::merge(planes, mTmpImageRGB);
 			}
 
 			CreateBrightnessImage(mTmpImageRGB, mTmpImageRGB);
 		}
 	}
-	else // RGBƒ‚ƒfƒ‹
+	else // RGBãƒ¢ãƒ‡ãƒ«
 	{
-		if (mOrgFloatImage.channels() == 1) // 1ch‚¾‚¯‚È‚Ì‚ÅRGB‚É•ÏŠ·
+		if (mOrgFloatImage.channels() == 1) // 1chã ã‘ãªã®ã§RGBã«å¤‰æ›
 		{
 			cv::cvtColor(mOrgFloatImage, mTmpImageRGB, YToRGBConvertMode);
 			mOrgFloatImage.release();
 		}
-		else // BGR‚©‚çRGB‚É•ÏŠ·(A‚ª‚ ‚Á‚½‚çA‚àæ‚èo‚·)
+		else // BGRã‹ã‚‰RGBã«å¤‰æ›(AãŒã‚ã£ãŸã‚‰Aã‚‚å–ã‚Šå‡ºã™)
 		{
 			std::vector<cv::Mat> planes;
 			cv::split(mOrgFloatImage, planes);
 			mOrgFloatImage.release();
 
-			if (planes.size() == 4) // BGRA‚È‚Ì‚ÅA‚¾‚¯æ‚èo‚·
+			if (planes.size() == 4) // BGRAãªã®ã§Aã ã‘å–ã‚Šå‡ºã™
 			{
 				mTmpImageA = planes[3];
 				planes.resize(3);
 
 				if (!IsOneColor(mTmpImageA))
 				{
-					AlphaMakeBorder(planes, mTmpImageA, alpha_offset); // “§–¾‚ÈƒsƒNƒZƒ‹‚Æ•s“§–¾‚ÈƒsƒNƒZƒ‹‚Ì‹«ŠE•”•ª‚ÌF‚ğL‚°‚é
+					AlphaMakeBorder(planes, mTmpImageA, alpha_offset); // é€æ˜ãªãƒ”ã‚¯ã‚»ãƒ«ã¨ä¸é€æ˜ãªãƒ”ã‚¯ã‚»ãƒ«ã®å¢ƒç•Œéƒ¨åˆ†ã®è‰²ã‚’åºƒã’ã‚‹
 
-					// ƒ¿Šg‘å—p‚ÉRGB‚É•ÏŠ·
+					// Î±æ‹¡å¤§ç”¨ã«RGBã«å¤‰æ›
 					cv::cvtColor(mTmpImageA, mTmpImageA, CV_GRAY2RGB);
 				}
 				else
@@ -513,7 +513,7 @@ void stImage::ConvertToNetFormat(const int input_plane, const int alpha_offset)
 				}
 			}
 
-			// BGR‚©‚çRGB‚É‚·‚é
+			// BGRã‹ã‚‰RGBã«ã™ã‚‹
 			std::swap(planes[0], planes[2]);
 
 			cv::merge(planes, mTmpImageRGB);
@@ -523,7 +523,7 @@ void stImage::ConvertToNetFormat(const int input_plane, const int alpha_offset)
 	}
 }
 
-// ‰æ‘œ‚©‚ç‹P“x‚Ì‰æ‘œ‚ğæ‚èo‚·
+// ç”»åƒã‹ã‚‰è¼åº¦ã®ç”»åƒã‚’å–ã‚Šå‡ºã™
 Waifu2x::eWaifu2xError stImage::CreateBrightnessImage(const cv::Mat &float_image, cv::Mat &im)
 {
 	if (float_image.channels() > 1)
@@ -595,8 +595,8 @@ void stImage::GetScalePaddingedImage(cv::Mat &in, cv::Mat &out, cv::Size_<int> &
 	out = ret;
 }
 
-// “ü—Í‰æ‘œ‚Ì(Photoshop‚Å‚¢‚¤)ƒLƒƒƒ“ƒoƒXƒTƒCƒY‚ğoutput_size‚Ì”{”‚É•ÏX
-// ‰æ‘œ‚Í¶ã”z’uA—]”’‚Ícv::BORDER_REPLICATE‚Å–„‚ß‚é
+// å…¥åŠ›ç”»åƒã®(Photoshopã§ã„ã†)ã‚­ãƒ£ãƒ³ãƒã‚¹ã‚µã‚¤ã‚ºã‚’output_sizeã®å€æ•°ã«å¤‰æ›´
+// ç”»åƒã¯å·¦ä¸Šé…ç½®ã€ä½™ç™½ã¯cv::BORDER_REPLICATEã§åŸ‹ã‚ã‚‹
 void stImage::PaddingImage(const cv::Mat &input, const int net_offset, const int outer_padding,
 	const int crop_w, const int crop_h, cv::Mat &output)
 {
@@ -608,12 +608,12 @@ void stImage::PaddingImage(const cv::Mat &input, const int net_offset, const int
 	cv::copyMakeBorder(input, output, pad_h1, pad_h2, pad_w1, pad_w2, cv::BORDER_REPLICATE);
 }
 
-// Šg‘åAƒpƒfƒBƒ“ƒO‚³‚ê‚½‰æ‘œ‚ğİ’è
+// æ‹¡å¤§ã€ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°ã•ã‚ŒãŸç”»åƒã‚’è¨­å®š
 void stImage::SetReconstructedImage(cv::Mat &dst, cv::Mat &src, const cv::Size_<int> &size, const int inner_scale)
 {
 	const cv::Size_<int> s(size * inner_scale);
 
-	// ƒuƒƒbƒNƒTƒCƒY—p‚ÌƒpƒfƒBƒ“ƒO‚ğæ‚è•¥‚¤(outer_padding‚ÍÄ\’z‚Ì‰ß’ö‚Åæ‚èœ‚©‚ê‚Ä‚¢‚é)
+	// ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚ºç”¨ã®ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°ã‚’å–ã‚Šæ‰•ã†(outer_paddingã¯å†æ§‹ç¯‰ã®éç¨‹ã§å–ã‚Šé™¤ã‹ã‚Œã¦ã„ã‚‹)
 	dst = src(cv::Rect(0, 0, s.width, s.height));
 
 	src.release();
@@ -624,7 +624,7 @@ void stImage::Postprocess(const int input_plane, const Factor scale, const int d
 	DeconvertFromNetFormat(input_plane);
 	ShrinkImage(scale);
 
-	// ’l‚ğ0`1‚ÉƒNƒŠƒbƒsƒ“ƒO
+	// å€¤ã‚’0ã€œ1ã«ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°
 	cv::threshold(mEndImage, mEndImage, 1.0, 1.0, cv::THRESH_TRUNC);
 	cv::threshold(mEndImage, mEndImage, 0.0, 0.0, cv::THRESH_TOZERO);
 
@@ -638,7 +638,7 @@ void stImage::Postprocess(const int input_plane, const int width, const int heig
 	DeconvertFromNetFormat(input_plane);
 	ShrinkImage(width, height);
 
-	// ’l‚ğ0`1‚ÉƒNƒŠƒbƒsƒ“ƒO
+	// å€¤ã‚’0ã€œ1ã«ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°
 	cv::threshold(mEndImage, mEndImage, 1.0, 1.0, cv::THRESH_TRUNC);
 	cv::threshold(mEndImage, mEndImage, 0.0, 0.0, cv::THRESH_TOZERO);
 
@@ -649,15 +649,15 @@ void stImage::Postprocess(const int input_plane, const int width, const int heig
 
 void stImage::DeconvertFromNetFormat(const int input_plane)
 {
-	if (input_plane == 1) // Yƒ‚ƒfƒ‹
+	if (input_plane == 1) // Yãƒ¢ãƒ‡ãƒ«
 	{
-		if (mOrgChannel == 1) // ‚à‚Æ‚à‚Æ1ch‚¾‚¯‚È‚Ì‚Å‚»‚Ì‚Ü‚Ü
+		if (mOrgChannel == 1) // ã‚‚ã¨ã‚‚ã¨1chã ã‘ãªã®ã§ãã®ã¾ã¾
 		{
 			mEndImage = mTmpImageRGB;
 			mTmpImageRGB.release();
 			mOrgFloatImage.release();
 		}
-		else // ‚à‚Æ‚à‚ÆBGR‚È‚Ì‚ÅŠù‘¶ƒAƒ‹ƒSƒŠƒYƒ€‚ÅŠg‘å‚µ‚½UV‚ÉŠg‘å‚µ‚½Y‚ğ‡‘Ì‚µ‚Ä–ß‚·
+		else // ã‚‚ã¨ã‚‚ã¨BGRãªã®ã§æ—¢å­˜ã‚¢ãƒ«ã‚´ãƒªã‚ºãƒ ã§æ‹¡å¤§ã—ãŸUVã«æ‹¡å¤§ã—ãŸYã‚’åˆä½“ã—ã¦æˆ»ã™
 		{
 			std::vector<cv::Mat> color_planes;
 			CreateZoomColorImage(mOrgFloatImage, mTmpImageRGB.size(), color_planes);
@@ -673,7 +673,7 @@ void stImage::DeconvertFromNetFormat(const int input_plane)
 			cv::cvtColor(converted_image, mEndImage, BGRToConvertInverseMode);
 			converted_image.release();
 
-			if (!mTmpImageA.empty()) // A‚à‚ ‚é‚Ì‚Å‡‘Ì
+			if (!mTmpImageA.empty()) // Aã‚‚ã‚ã‚‹ã®ã§åˆä½“
 			{
 				std::vector<cv::Mat> planes;
 				cv::split(mEndImage, planes);
@@ -683,14 +683,14 @@ void stImage::DeconvertFromNetFormat(const int input_plane)
 
 				cv::merge(planes, mEndImage);
 			}
-			else if (!mTmpImageAOneColor.empty()) // ’PF”ÅA‚ğ–ß‚·
+			else if (!mTmpImageAOneColor.empty()) // å˜è‰²ç‰ˆAã‚’æˆ»ã™
 			{
 				std::vector<cv::Mat> planes;
 				cv::split(mEndImage, planes);
 
 				cv::Size_<int> zoom_size = planes[0].size();
 
-				// ƒ}[ƒWæ‚ÌƒTƒCƒY‚É‡‚í‚¹‚é
+				// ãƒãƒ¼ã‚¸å…ˆã®ã‚µã‚¤ã‚ºã«åˆã‚ã›ã‚‹
 				cv::resize(mTmpImageAOneColor, mTmpImageAOneColor, zoom_size, 0.0, 0.0, cv::INTER_NEAREST);
 
 				planes.push_back(mTmpImageAOneColor);
@@ -700,41 +700,41 @@ void stImage::DeconvertFromNetFormat(const int input_plane)
 			}
 		}
 	}
-	else // RGBƒ‚ƒfƒ‹
+	else // RGBãƒ¢ãƒ‡ãƒ«
 	{
-		// ‚±‚±‚Ì’n“_‚ÅmOrgFloatImage‚Í‹ó
+		// ã“ã“ã®åœ°ç‚¹ã§mOrgFloatImageã¯ç©º
 
-		if (mOrgChannel == 1) // ‚à‚Æ‚à‚Æ1ch‚¾‚¯‚È‚Ì‚Å–ß‚·
+		if (mOrgChannel == 1) // ã‚‚ã¨ã‚‚ã¨1chã ã‘ãªã®ã§æˆ»ã™
 		{
 			cv::cvtColor(mTmpImageRGB, mEndImage, YToRGBConverInversetMode);
 			mTmpImageRGB.release();
 		}
-		else // ‚à‚Æ‚à‚ÆBGR‚È‚Ì‚ÅRGB‚©‚ç–ß‚·(A‚ª‚ ‚Á‚½‚çA‚à‡‘Ì‚µ‚Ä–ß‚·)
+		else // ã‚‚ã¨ã‚‚ã¨BGRãªã®ã§RGBã‹ã‚‰æˆ»ã™(AãŒã‚ã£ãŸã‚‰Aã‚‚åˆä½“ã—ã¦æˆ»ã™)
 		{
 			std::vector<cv::Mat> planes;
 			cv::split(mTmpImageRGB, planes);
 			mTmpImageRGB.release();
 
-			if (!mTmpImageA.empty()) // A‚à‚ ‚é‚Ì‚Å‡‘Ì
+			if (!mTmpImageA.empty()) // Aã‚‚ã‚ã‚‹ã®ã§åˆä½“
 			{
-				// RGB‚©‚ç1ch‚É–ß‚·
+				// RGBã‹ã‚‰1chã«æˆ»ã™
 				cv::cvtColor(mTmpImageA, mTmpImageA, CV_RGB2GRAY);
 
 				planes.push_back(mTmpImageA);
 				mTmpImageA.release();
 			}
-			else if (!mTmpImageAOneColor.empty()) // ’PF”ÅA‚ğ–ß‚·
+			else if (!mTmpImageAOneColor.empty()) // å˜è‰²ç‰ˆAã‚’æˆ»ã™
 			{
 				cv::Size_<int> zoom_size = planes[0].size();
 
-				// ƒ}[ƒWæ‚ÌƒTƒCƒY‚É‡‚í‚¹‚é
+				// ãƒãƒ¼ã‚¸å…ˆã®ã‚µã‚¤ã‚ºã«åˆã‚ã›ã‚‹
 				cv::resize(mTmpImageAOneColor, mTmpImageAOneColor, zoom_size, 0.0, 0.0, cv::INTER_NEAREST);
 
 				planes.push_back(mTmpImageAOneColor);
 				mTmpImageAOneColor.release();
 			}
 
-			// RGB‚©‚çBGR‚É‚·‚é
+			// RGBã‹ã‚‰BGRã«ã™ã‚‹
 			std::swap(planes[0], planes[2]);
 
 			cv::merge(planes, mEndImage);
@@ -782,7 +782,7 @@ cv::Mat stImage::DeconvertFromFloat(const cv::Mat &im, const int depth)
 	const double eps = GetEPS(cv_depth);
 
 	cv::Mat ret;
-	if (depth == 32) // o—Í‚ªfloatŒ`®‚È‚ç•ÏŠ·‚µ‚È‚¢
+	if (depth == 32) // å‡ºåŠ›ãŒfloatå½¢å¼ãªã‚‰å¤‰æ›ã—ãªã„
 		ret = im;
 	else
 		im.convertTo(ret, cv_depth, max_val, eps);
@@ -822,10 +822,10 @@ namespace
 
 void stImage::AlphaCleanImage(cv::Mat &im)
 {
-	// Š®‘S“§–¾‚ÌƒsƒNƒZƒ‹‚ÌF‚ğÁ‚·(ˆ—‚Ì“s‡ãAŠ®‘S“§–¾‚ÌƒsƒNƒZƒ‹‚É‚àF‚ğ•t‚¯‚½‚©‚ç)
-	// ƒ‚ƒfƒ‹‚É‚æ‚Á‚Ä‚Í‰æ‘œ‘Sˆæ‚ÌŠ®‘S“§–¾‚ÌêŠ‚É‚²‚­¬‚³‚¢’l‚ÌƒAƒ‹ƒtƒ@‚ªL‚ª‚é‚±‚Æ‚ª‚ ‚éB‚»‚ê‚ğÁ‚·‚½‚ß‚Écv_depth‚Ö•ÏŠ·‚µ‚Ä‚©‚ç‚±‚Ìˆ—‚ğs‚¤‚±‚Æ‚É‚µ‚½
-	// (‚½‚¾‚µcv_depth‚ª32‚Ìê‡‚¾‚ÆˆÓ–¡‚Í–³‚¢‚ª)
-	// TODO: ƒ‚ƒfƒ‹(—á‚¦‚ÎPhoto)‚É‚æ‚Á‚Ä‚Í0‚µ‚©‚È‚¢‰æ‘œ‚ğ•ÏŠ·‚µ‚Ä‚à0.000114856390‚Æ‚©‚É‚È‚é‚Ì‚ÅA“KØ‚È’l‚ÌƒNƒŠƒbƒsƒ“ƒO‚ğs‚¤H
+	// å®Œå…¨é€æ˜ã®ãƒ”ã‚¯ã‚»ãƒ«ã®è‰²ã‚’æ¶ˆã™(å‡¦ç†ã®éƒ½åˆä¸Šã€å®Œå…¨é€æ˜ã®ãƒ”ã‚¯ã‚»ãƒ«ã«ã‚‚è‰²ã‚’ä»˜ã‘ãŸã‹ã‚‰)
+	// ãƒ¢ãƒ‡ãƒ«ã«ã‚ˆã£ã¦ã¯ç”»åƒå…¨åŸŸã®å®Œå…¨é€æ˜ã®å ´æ‰€ã«ã”ãå°ã•ã„å€¤ã®ã‚¢ãƒ«ãƒ•ã‚¡ãŒåºƒãŒã‚‹ã“ã¨ãŒã‚ã‚‹ã€‚ãã‚Œã‚’æ¶ˆã™ãŸã‚ã«cv_depthã¸å¤‰æ›ã—ã¦ã‹ã‚‰ã“ã®å‡¦ç†ã‚’è¡Œã†ã“ã¨ã«ã—ãŸ
+	// (ãŸã ã—cv_depthãŒ32ã®å ´åˆã ã¨æ„å‘³ã¯ç„¡ã„ãŒ)
+	// TODO: ãƒ¢ãƒ‡ãƒ«(ä¾‹ãˆã°Photo)ã«ã‚ˆã£ã¦ã¯0ã—ã‹ãªã„ç”»åƒã‚’å¤‰æ›ã—ã¦ã‚‚0.000114856390ã¨ã‹ã«ãªã‚‹ã®ã§ã€é©åˆ‡ãªå€¤ã®ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°ã‚’è¡Œã†ï¼Ÿ
 	if (im.channels() > 3)
 	{
 		std::vector<cv::Mat> planes;
@@ -857,7 +857,7 @@ void stImage::AlphaCleanImage(cv::Mat &im)
 }
 
 
-// “ü—Í‰æ‘œ‚ğzoom_size‚Ì‘å‚«‚³‚Écv::INTER_CUBIC‚ÅŠg‘å‚µAFî•ñ‚Ì‚İ‚ğc‚·
+// å…¥åŠ›ç”»åƒã‚’zoom_sizeã®å¤§ãã•ã«cv::INTER_CUBICã§æ‹¡å¤§ã—ã€è‰²æƒ…å ±ã®ã¿ã‚’æ®‹ã™
 Waifu2x::eWaifu2xError stImage::CreateZoomColorImage(const cv::Mat &float_image, const cv::Size_<int> &zoom_size, std::vector<cv::Mat> &cubic_planes)
 {
 	cv::Mat zoom_cubic_image;
@@ -870,7 +870,7 @@ Waifu2x::eWaifu2xError stImage::CreateZoomColorImage(const cv::Mat &float_image,
 	cv::split(converted_cubic_image, cubic_planes);
 	converted_cubic_image.release();
 
-	// ‚±‚ÌY¬•ª‚Íg‚í‚È‚¢‚Ì‚Å‰ğ•ú
+	// ã“ã®Yæˆåˆ†ã¯ä½¿ã‚ãªã„ã®ã§è§£æ”¾
 	cubic_planes[0].release();
 
 	return Waifu2x::eWaifu2xError_OK;
@@ -896,7 +896,7 @@ Waifu2x::eWaifu2xError stImage::WriteMat(const cv::Mat &im, const boost::filesys
 		unsigned char *data = im.data;
 
 		std::vector<unsigned char> rgbimg;
-		if (im.channels() >= 3 || im.step1() != im.size().width * im.channels()) // RGB—pƒoƒbƒtƒ@‚ÉƒRƒs[(‚ ‚é‚¢‚ÍƒpƒfƒBƒ“ƒO‚ğ‚Æ‚é)
+		if (im.channels() >= 3 || im.step1() != im.size().width * im.channels()) // RGBç”¨ãƒãƒƒãƒ•ã‚¡ã«ã‚³ãƒ”ãƒ¼(ã‚ã‚‹ã„ã¯ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°ã‚’ã¨ã‚‹)
 		{
 			const auto Line = im.step1();
 			const auto Channel = im.channels();
@@ -912,7 +912,7 @@ Waifu2x::eWaifu2xError stImage::WriteMat(const cv::Mat &im, const boost::filesys
 			data = rgbimg.data();
 		}
 
-		if (im.channels() >= 3) // BGR‚ğRGB‚É•À‚Ñ‘Ö‚¦
+		if (im.channels() >= 3) // BGRã‚’RGBã«ä¸¦ã³æ›¿ãˆ
 		{
 			const auto Line = im.step1();
 			const auto Channel = im.channels();
@@ -941,7 +941,7 @@ Waifu2x::eWaifu2xError stImage::WriteMat(const cv::Mat &im, const boost::filesys
 		if (!os)
 			return Waifu2x::eWaifu2xError_FailedOpenOutputFile;
 
-		// RLEˆ³k‚Ìİ’è
+		// RLEåœ§ç¸®ã®è¨­å®š
 		bool isSet = false;
 		const auto &OutputExtentionList = stImage::OutputExtentionList;
 		for (const auto &elm : OutputExtentionList)
@@ -958,7 +958,7 @@ Waifu2x::eWaifu2xError stImage::WriteMat(const cv::Mat &im, const boost::filesys
 			}
 		}
 
-		// İ’è‚³‚ê‚È‚©‚Á‚½‚Ì‚ÅƒfƒtƒHƒ‹ƒg‚É‚·‚é
+		// è¨­å®šã•ã‚Œãªã‹ã£ãŸã®ã§ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã«ã™ã‚‹
 		if (!isSet)
 			stbi_write_tga_with_rle = 1;
 

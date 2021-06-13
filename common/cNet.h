@@ -11,10 +11,10 @@ private:
 
 	boost::shared_ptr<caffe::Net<float>> mNet;
 
-	int mModelScale; // ƒ‚ƒfƒ‹‚ª‘ÎÛ‚Æ‚·‚éŠg‘å—¦
-	int mInnerScale; // ƒlƒbƒg“à•”‚ÅŠg‘å‚³‚ê‚é”{—¦
-	int mNetOffset; // ƒlƒbƒg‚É“ü—Í‚·‚é‚Æ‚Ç‚ê‚­‚ç‚¢í‚ê‚é‚©
-	int mInputPlane; // ƒlƒbƒg‚Ö‚Ì“ü—Íƒ`ƒƒƒ“ƒlƒ‹”
+	int mModelScale; // ãƒ¢ãƒ‡ãƒ«ãŒå¯¾è±¡ã¨ã™ã‚‹æ‹¡å¤§ç‡
+	int mInnerScale; // ãƒãƒƒãƒˆå†…éƒ¨ã§æ‹¡å¤§ã•ã‚Œã‚‹å€ç‡
+	int mNetOffset; // ãƒãƒƒãƒˆã«å…¥åŠ›ã™ã‚‹ã¨ã©ã‚Œãã‚‰ã„å‰Šã‚Œã‚‹ã‹
+	int mInputPlane; // ãƒãƒƒãƒˆã¸ã®å…¥åŠ›ãƒãƒ£ãƒ³ãƒãƒ«æ•°
 	bool mHasNoiseScaleModel;
 
 private:

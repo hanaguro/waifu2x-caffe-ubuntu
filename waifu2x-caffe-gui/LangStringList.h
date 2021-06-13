@@ -31,7 +31,7 @@ private:
 	stLangSetting NowLang;
 	LANGID NowLangID = GetUserDefaultUILanguage();
 	std::unordered_map<std::wstring, std::wstring> LangStringMap;
-	std::unordered_map<std::wstring, std::wstring> DefaultLangStringMap; // Œ»İ‚ÌŒ¾Œê‚É‚È‚©‚Á‚½•¶š—ñ‚ÌƒtƒH[ƒ‹ƒoƒbƒN—pBƒŠƒXƒg‚Ìˆê”ÔÅ‰‚É‘‚©‚ê‚Ä‚¢‚éŒ¾Œê‚ªƒfƒtƒHƒ‹ƒg
+	std::unordered_map<std::wstring, std::wstring> DefaultLangStringMap; // ç¾åœ¨ã®è¨€èªã«ãªã‹ã£ãŸæ–‡å­—åˆ—ã®ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯ç”¨ã€‚ãƒªã‚¹ãƒˆã®ä¸€ç•ªæœ€åˆã«æ›¸ã‹ã‚Œã¦ã„ã‚‹è¨€èªãŒãƒ‡ãƒ•ã‚©ãƒ«ãƒˆ
 
 private:
 	static std::wstring Utf8ToUtf16(const char *src, int src_size = -1)
@@ -85,12 +85,12 @@ private:
 			}
 		}
 
-		if (FindPrimary >= 0 && FindSub >= 0) // Œ»İ‚ÌŒ¾Œê‚Éƒsƒbƒ^ƒŠ‡‚¤‚â‚Â‚ªŒ©‚Â‚©‚Á‚½
+		if (FindPrimary >= 0 && FindSub >= 0) // ç¾åœ¨ã®è¨€èªã«ãƒ”ãƒƒã‚¿ãƒªåˆã†ã‚„ã¤ãŒè¦‹ã¤ã‹ã£ãŸ
 			return LangList[FindSub];
-		else if (FindPrimary >= 0) // Œ»İ‚ÌŒ¾Œê‚É‘®‚·‚é‚à‚Ì‚ªŒ©‚Â‚©‚Á‚½
+		else if (FindPrimary >= 0) // ç¾åœ¨ã®è¨€èªã«å±ã™ã‚‹ã‚‚ã®ãŒè¦‹ã¤ã‹ã£ãŸ
 			return LangList[FindPrimary];
 
-		// Œ©‚Â‚©‚ç‚È‚©‚Á‚½‚©‚çˆê”ÔÅ‰‚É‘‚©‚ê‚Ä‚¢‚é‚â‚Â‚É‚·‚é
+		// è¦‹ã¤ã‹ã‚‰ãªã‹ã£ãŸã‹ã‚‰ä¸€ç•ªæœ€åˆã«æ›¸ã‹ã‚Œã¦ã„ã‚‹ã‚„ã¤ã«ã™ã‚‹
 		if (LangList.size() > 0)
 			return LangList[0];
 
@@ -207,7 +207,7 @@ public:
 		if (NowLangID != 0)
 			SetLang(NowLangID);
 
-		// ƒfƒtƒHƒ‹ƒgŒ¾Œê‚ğ“Ç‚İ‚¾‚·
+		// ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆè¨€èªã‚’èª­ã¿ã ã™
 		ReadLangFile(LangList[0], DefaultLangStringMap);
 
 		return true;

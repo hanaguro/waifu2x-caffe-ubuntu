@@ -15,23 +15,23 @@ int WINAPI WinMain(HINSTANCE hInstance,
 {
 	Waifu2x::init_liblary(__argc, __argv);
 
-	// ŠÇ—ÒŒ ŒÀ‚Å‹N“®‚µ‚Ä‚àƒtƒ@ƒCƒ‹‚Ìƒhƒƒbƒv‚ğó‚¯•t‚¯‚é‚æ‚¤‚É‚·‚é
+	// ç®¡ç†è€…æ¨©é™ã§èµ·å‹•ã—ã¦ã‚‚ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‰ãƒ­ãƒƒãƒ—ã‚’å—ã‘ä»˜ã‘ã‚‹ã‚ˆã†ã«ã™ã‚‹
 	ChangeWindowMessageFilter(WM_DROPFILES, MSGFLT_ADD);
 	ChangeWindowMessageFilter(WM_COPYDATA, MSGFLT_ADD);
 	ChangeWindowMessageFilter(0x0049, MSGFLT_ADD);
 
-	// Caffe‚ÌƒGƒ‰[‚Å‚È‚¢ƒƒO‚ğ•Û‘¶‚µ‚È‚¢‚æ‚¤‚É‚·‚é
+	// Caffeã®ã‚¨ãƒ©ãƒ¼ã§ãªã„ãƒ­ã‚°ã‚’ä¿å­˜ã—ãªã„ã‚ˆã†ã«ã™ã‚‹
 	google::SetLogDestination(google::INFO, "");
 	google::SetLogDestination(google::WARNING, "");
 
-	// Caffe‚ÌƒGƒ‰[ƒƒO‚ğuerror_log_`v‚Éo—Í
+	// Caffeã®ã‚¨ãƒ©ãƒ¼ãƒ­ã‚°ã‚’ã€Œerror_log_ã€œã€ã«å‡ºåŠ›
 	google::SetLogDestination(google::ERROR, "error_log_");
 	google::SetLogDestination(google::FATAL, "error_log_");
 
-	// CDialogƒNƒ‰ƒX‚Åƒ_ƒCƒAƒƒO‚ğì¬‚·‚é
+	// CDialogã‚¯ãƒ©ã‚¹ã§ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’ä½œæˆã™ã‚‹
 	CDialog cDialog;
 	CDialog cDialog2;
-	// IDC_EDIT‚ÌƒTƒuƒNƒ‰ƒX
+	// IDC_EDITã®ã‚µãƒ–ã‚¯ãƒ©ã‚¹
 	CControl cControlInput(IDC_EDIT_INPUT);
 	CControl cControlOutput(IDC_EDIT_OUTPUT);
 	CControl cControlScaleRatio(IDC_EDIT_SCALE_RATIO);
@@ -39,13 +39,13 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	CControl cControlScaleHeight(IDC_EDIT_SCALE_HEIGHT);
 	CControl cControlScaleWidthHeight(IDC_EDIT_SCALE_WIDTH_HEIGHT);
 
-	// “o˜^‚·‚éŠÖ”‚ª‚Ü‚Æ‚ß‚ç‚ê‚½ƒNƒ‰ƒX
-	// ƒOƒ[ƒoƒ‹ŠÖ”‚ğg‚¦‚ÎƒNƒ‰ƒX‚É‚Ü‚Æ‚ß‚é•K—v‚Í‚È‚¢‚ª‚±‚Ì•û–@‚ª–ğ—§‚Â‚±‚Æ‚à‚ ‚é‚Í‚¸
+	// ç™»éŒ²ã™ã‚‹é–¢æ•°ãŒã¾ã¨ã‚ã‚‰ã‚ŒãŸã‚¯ãƒ©ã‚¹
+	// ã‚°ãƒ­ãƒ¼ãƒãƒ«é–¢æ•°ã‚’ä½¿ãˆã°ã‚¯ãƒ©ã‚¹ã«ã¾ã¨ã‚ã‚‹å¿…è¦ã¯ãªã„ãŒã“ã®æ–¹æ³•ãŒå½¹ç«‹ã¤ã“ã¨ã‚‚ã‚ã‚‹ã¯ãš
 	DialogEvent cDialogEvent;
 
-	// ƒNƒ‰ƒX‚ÌŠÖ”‚ğ“o˜^‚·‚éê‡
+	// ã‚¯ãƒ©ã‚¹ã®é–¢æ•°ã‚’ç™»éŒ²ã™ã‚‹å ´åˆ
 
-	// IDC_EDIT‚ÉWM_DROPFILES‚ª‘—‚ç‚ê‚Ä‚«‚½‚Æ‚«‚ÉÀs‚·‚éŠÖ”‚Ì“o˜^
+	// IDC_EDITã«WM_DROPFILESãŒé€ã‚‰ã‚Œã¦ããŸã¨ãã«å®Ÿè¡Œã™ã‚‹é–¢æ•°ã®ç™»éŒ²
 	cControlInput.SetEventCallBack(SetClassCustomFunc(DialogEvent::DropInput, &cDialogEvent), NULL, WM_DROPFILES);
 	cControlOutput.SetEventCallBack(SetClassCustomFunc(DialogEvent::DropOutput, &cDialogEvent), NULL, WM_DROPFILES);
 
@@ -54,7 +54,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	cControlScaleHeight.SetEventCallBack(SetClassCustomFunc(DialogEvent::TextInput, &cDialogEvent), NULL, WM_CHAR);
 	cControlScaleWidthHeight.SetEventCallBack(SetClassCustomFunc(DialogEvent::TextInput, &cDialogEvent), NULL, WM_CHAR);
 
-	// ƒRƒ“ƒgƒ[ƒ‹‚ÌƒTƒuƒNƒ‰ƒX‚ğ“o˜^
+	// ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã®ã‚µãƒ–ã‚¯ãƒ©ã‚¹ã‚’ç™»éŒ²
 	cDialog.AddControl(&cControlInput);
 	cDialog.AddControl(&cControlOutput);
 	cDialog.AddControl(&cControlScaleRatio);
@@ -62,7 +62,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	cDialog.AddControl(&cControlScaleHeight);
 	cDialog.AddControl(&cControlScaleWidthHeight);
 
-	// ŠeƒRƒ“ƒgƒ[ƒ‹‚ÌƒCƒxƒ“ƒg‚ÅÀs‚·‚éŠÖ”‚Ì“o˜^
+	// å„ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã®ã‚¤ãƒ™ãƒ³ãƒˆã§å®Ÿè¡Œã™ã‚‹é–¢æ•°ã®ç™»éŒ²
 	cDialog.SetCommandCallBack(SetClassFunc(DialogEvent::Exec, &cDialogEvent), NULL, IDC_BUTTON_EXEC);
 	cDialog.SetCommandCallBack(SetClassFunc(DialogEvent::Cancel, &cDialogEvent), NULL, IDC_BUTTON_CANCEL);
 	cDialog.SetCommandCallBack(SetClassFunc(DialogEvent::InputRef, &cDialogEvent), NULL, IDC_BUTTON_INPUT_REF);
@@ -94,7 +94,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 
 	cDialog.SetCommandCallBack(SetClassFunc(DialogEvent::OnModelChange, &cDialogEvent), NULL, IDC_COMBO_MODEL);
 
-	// ƒ_ƒCƒAƒƒO‚ÌƒCƒxƒ“ƒg‚ÅÀs‚·‚éŠÖ”‚Ì“o˜^
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®ã‚¤ãƒ™ãƒ³ãƒˆã§å®Ÿè¡Œã™ã‚‹é–¢æ•°ã®ç™»éŒ²
 	cDialog.SetEventCallBack(SetClassFunc(DialogEvent::Create, &cDialogEvent), NULL, WM_INITDIALOG);
 	cDialog.SetEventCallBack(SetClassFunc(DialogEvent::OnDialogEnd, &cDialogEvent), NULL, WM_CLOSE);
 	cDialog.SetEventCallBack(SetClassFunc(DialogEvent::OnFaildCreateDir, &cDialogEvent), NULL, WM_FAILD_CREATE_DIR);
@@ -103,7 +103,7 @@ int WINAPI WinMain(HINSTANCE hInstance,
 	cDialog.SetEventCallBack(SetClassFunc(DialogEvent::WaitThreadExit, &cDialogEvent), NULL, WM_END_THREAD);
 	cDialog.SetEventCallBack(SetClassFunc(DialogEvent::Timer, &cDialogEvent), NULL, WM_TIMER);
 
-	// ƒ_ƒCƒAƒƒO‚ğ•\¦
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’è¡¨ç¤º
 	cDialog.DoModal(hInstance, IDD_DIALOG);
 
 	Waifu2x::quit_liblary();

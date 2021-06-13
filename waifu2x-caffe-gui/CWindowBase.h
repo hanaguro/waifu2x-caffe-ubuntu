@@ -6,7 +6,7 @@
 class CWindowBase
 {
 private:
-	// ƒ_ƒCƒAƒƒOƒvƒƒV[ƒWƒƒ(ŽÀŽ¿)
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£(å®Ÿè³ª)
 	virtual LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;
 
 protected:
@@ -14,12 +14,12 @@ protected:
 	DWORD dwStyle;
 
 public:
-	// ‰¼‘zƒfƒXƒgƒ‰ƒNƒ^(‰½‚à‚µ‚È‚¢)
+	// ä»®æƒ³ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿(ä½•ã‚‚ã—ãªã„)
 	virtual ~CWindowBase();
 
-	// ƒ_ƒCƒAƒƒO‚ðì¬
-	// Adjust: ^‚È‚çƒTƒCƒY‚ðƒNƒ‰ƒCƒAƒ“ƒg—Ìˆæ‚Ì‚à‚Ì‚Æ‚·‚é
-	// bSizeBox: ^‚È‚çƒTƒCƒY•ÏX‚Å‚«‚é‚æ‚¤‚É‚·‚é
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’ä½œæˆ
+	// Adjust: çœŸãªã‚‰ã‚µã‚¤ã‚ºã‚’ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆé ˜åŸŸã®ã‚‚ã®ã¨ã™ã‚‹
+	// bSizeBox: çœŸãªã‚‰ã‚µã‚¤ã‚ºå¤‰æ›´ã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
 	HWND InitWindow(HINSTANCE hInstance, UINT Width, UINT Height,
 		BOOL Adjust, BOOL bSizeBox, LPCTSTR szClassName, LPCTSTR szWindowTitle);
 
@@ -27,21 +27,21 @@ public:
 		BOOL Adjust, LPCTSTR szClassName, LPCTSTR szWindowTitle,
 		UINT WindowClassStyle = CS_HREDRAW | CS_VREDRAW, DWORD WindowStyle = WS_OVERLAPPEDWINDOW);
 
-	// ƒEƒBƒ“ƒhƒE‚ð•\Ž¦
+	// ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’è¡¨ç¤º
 	void ShowWindow(int nCmdShow);
 
-	// ƒƒCƒ“ƒEƒBƒ“ƒhƒE‚Ìƒnƒ“ƒhƒ‹‚ðŽæ“¾
+	// ãƒ¡ã‚¤ãƒ³ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã®ãƒãƒ³ãƒ‰ãƒ«ã‚’å–å¾—
 	HWND GetWindowHandle(void);
 
-	// ƒƒbƒZ[ƒWƒ‹[ƒv
+	// ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ãƒ«ãƒ¼ãƒ—
 	void MessageLoop();
 
-	// –ß‚è’l:	I—¹ 0
-	//			ƒƒbƒZ[ƒW‚ðˆ— 1
-	//			ƒƒbƒZ[ƒW‚Í‚È‚©‚Á‚½ 2
+	// æˆ»ã‚Šå€¤:	çµ‚äº† 0
+	//			ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’å‡¦ç† 1
+	//			ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã¯ãªã‹ã£ãŸ 2
 	int PeekLoop();
 
 
-	// ƒ_ƒCƒAƒƒOƒvƒƒV[ƒWƒƒ(Œ`Ž®ã)
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£(å½¢å¼ä¸Š)
 	static LRESULT CALLBACK DispatchWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

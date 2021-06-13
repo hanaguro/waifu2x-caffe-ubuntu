@@ -7,8 +7,8 @@
 #include "GUICommon.h"
 
 
-// ����
-// �C�x���g�n���h����SetWindowLong��GWL_USERDATA�������������ꍇ���������Ȃ�
+// 注意
+// イベントハンドラでSetWindowLongでGWL_USERDATAを書き換えた場合おかしくなる
 class CWindow: public CWindowBase
 {
 private:
@@ -33,29 +33,29 @@ private:
 	};
 	std::unordered_map<UINT, stEvent> mEvent;
 
-	// �R�s�[�A����̋֎~
+	// コピー、代入の禁止
 	CWindow(const CWindow&);
 	CWindow& operator =(const CWindow&);
 
-	// �_�C�A���O�v���V�[�W���i�����j
+	// ダイアログプロシージャ（実質）
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 public:
-	// ��̃��b�Z�[�W�ɂ���̊֐������o�^�ł��Ȃ�.
-	// ���łɂ������ꍇ�͏㏑�������.
-	// lpData�͓o�^�����֐��ɗ^����D���Ȉ���.
-	// �o�^�ł���֐��́A
+	// 一つのメッセージにつき一つの関数しか登録できない.
+	// すでにあった場合は上書きされる.
+	// lpDataは登録した関数に与える好きな引数.
+	// 登録できる関数は、
 	// BOOL Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData);
-	// �̂悤�Ȋ֐�.
-	// �߂�l��TRUE�ł�FALSE�ł��悢.
+	// のような関数.
+	// 戻り値はTRUEでもFALSEでもよい.
 	void SetEventCallBack(EventFunc pfunc, LPVOID lpData, UINT uMsg);
 
-	// �E�B���h�E�T�C�Y�ύX
+	// ウィンドウサイズ変更
 	void SetWindowSize(int nWidth, int nHeight, BOOL Adjust);
 
-	// �E�B���h�E����ʒ��S�ֈړ�
+	// ウィンドウを画面中心へ移動
 	void MoveWindowCenter();
 
-	// �R���X�g���N�^(�������Ȃ�)
+	// コンストラクタ(何もしない)
 	CWindow();
 };

@@ -69,7 +69,7 @@ const std::wstring ModelTitleLangKeyList[eModelTypeEnd] = {
 };
 
 
-// ƒ_ƒCƒAƒƒO—p
+// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ç”¨
 class DialogEvent
 {
 private:
@@ -178,7 +178,7 @@ private:
 
 	void SaveIni(const bool isSyncMember = true);
 
-	// “ü—ÍƒpƒX‚ð‘I‘ð‚·‚é
+	// å…¥åŠ›ãƒ‘ã‚¹ã‚’é¸æŠžã™ã‚‹
 	static UINT_PTR CALLBACK OFNHookProcIn(
 		_In_  HWND hdlg,
 		_In_  UINT uiMsg,
@@ -186,7 +186,7 @@ private:
 		_In_  LPARAM lParam
 	);
 
-	// o—ÍƒpƒX‚ð‘I‘ð‚·‚é
+	// å‡ºåŠ›ãƒ‘ã‚¹ã‚’é¸æŠžã™ã‚‹
 	static UINT_PTR CALLBACK OFNHookProcOut(
 		_In_  HWND hdlg,
 		_In_  UINT uiMsg,
@@ -237,10 +237,10 @@ public:
 
 	LRESULT OnSetOutputFilePath(const TCHAR *tPath);
 
-	// ‚±‚±‚Å“n‚³‚ê‚éhWnd‚ÍIDC_EDIT‚ÌHWND(ƒRƒ“ƒgƒ[ƒ‹‚ÌƒCƒxƒ“ƒg‚¾‚©‚ç)
+	// ã“ã“ã§æ¸¡ã•ã‚Œã‚‹hWndã¯IDC_EDITã®HWND(ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã®ã‚¤ãƒ™ãƒ³ãƒˆã ã‹ã‚‰)
 	LRESULT DropInput(HWND hWnd, WPARAM wParam, LPARAM lParam, WNDPROC OrgSubWnd, LPVOID lpData);
 
-	// ‚±‚±‚Å“n‚³‚ê‚éhWnd‚ÍIDC_EDIT‚ÌHWND(ƒRƒ“ƒgƒ[ƒ‹‚ÌƒCƒxƒ“ƒg‚¾‚©‚ç)
+	// ã“ã“ã§æ¸¡ã•ã‚Œã‚‹hWndã¯IDC_EDITã®HWND(ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã®ã‚¤ãƒ™ãƒ³ãƒˆã ã‹ã‚‰)
 	LRESULT DropOutput(HWND hWnd, WPARAM wParam, LPARAM lParam, WNDPROC OrgSubWnd, LPVOID lpData);
 
 	LRESULT TextInput(HWND hWnd, WPARAM wParam, LPARAM lParam, WNDPROC OrgSubWnd, LPVOID lpData);

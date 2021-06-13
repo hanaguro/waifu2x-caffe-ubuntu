@@ -6,7 +6,7 @@
 class CDialogBase
 {
 private:
-	// ƒ_ƒCƒAƒƒOƒvƒƒV[ƒWƒƒ(À¿) 
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£(å®Ÿè³ª) 
 	virtual INT_PTR DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) = 0;
 
 protected:
@@ -15,11 +15,11 @@ protected:
 public:
 	virtual ~CDialogBase(){};
 
-	// ƒ_ƒCƒAƒƒO‚ğì¬‚·‚é 
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’ä½œæˆã™ã‚‹ 
 	INT_PTR DoModal(HINSTANCE hInstance, int iDialogId, HWND hWndParent = NULL);
 
 	HWND GetDialogHWND(void);
 
-	// ƒ_ƒCƒAƒƒOƒvƒƒV[ƒWƒƒ(Œ`®ã)
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£(å½¢å¼ä¸Š)
 	static INT_PTR CALLBACK DispatchDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

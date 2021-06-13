@@ -430,7 +430,7 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 
 		inputFileExt = buf;
 
-		// input_extention_list‚ğ•¶š—ñ‚Ì”z—ñ‚É‚·‚é
+		// input_extention_listã‚’æ–‡å­—åˆ—ã®é…åˆ—ã«ã™ã‚‹
 
 		typedef boost::char_separator<TCHAR> char_separator;
 		typedef boost::tokenizer<char_separator, tstring::const_iterator, tstring> tokenizer;
@@ -466,7 +466,7 @@ bool DialogEvent::SyncMember(const bool NotSyncCropSize, const bool silent)
 
 			MessageBox(dh, langStringList.GetString(L"MessageCropSizeCheckError").c_str(), langStringList.GetString(L"MessageTitleError").c_str(), MB_OK | MB_ICONERROR);
 		}
-		else if (crop_size % info.force_divisible_crop_size != 0) // ‚±‚Ìƒ‚ƒfƒ‹‚Å‚Íİ’è‚Å‚«‚È‚¢CropSize
+		else if (crop_size % info.force_divisible_crop_size != 0) // ã“ã®ãƒ¢ãƒ‡ãƒ«ã§ã¯è¨­å®šã§ããªã„CropSize
 		{
 			wchar_t buf[1024] = { TEXT('\0') };
 			swprintf(buf, langStringList.GetString(L"MessageCropSizeDivisibleCheckError").c_str(), info.force_divisible_crop_size);
@@ -521,10 +521,10 @@ void DialogEvent::SetCropSizeList(const boost::filesystem::path & input_path)
 	while (SendMessage(hcrop, CB_GETCOUNT, 0, 0) != 0)
 		SendMessage(hcrop, CB_DELETESTRING, 0, 0);
 
-	// Å‘åŒö–ñ”‚Ì–ñ”‚ÌƒŠƒXƒgæ“¾
+	// æœ€å¤§å…¬ç´„æ•°ã®ç´„æ•°ã®ãƒªã‚¹ãƒˆå–å¾—
 	std::vector<int> list(CommonDivisorList(gcd));
 
-	// MinCommonDivisor–¢–‚Ì–ñ”íœ
+	// MinCommonDivisoræœªæº€ã®ç´„æ•°å‰Šé™¤
 	list.erase(std::remove_if(list.begin(), list.end(), [](const int v)
 	{
 		return v < MinCommonDivisor;
@@ -569,7 +569,7 @@ void DialogEvent::SetCropSizeList(const boost::filesystem::path & input_path)
 	{
 		const int n = list[i];
 
-		if (n % info.force_divisible_crop_size != 0) // ‚±‚Ìƒ‚ƒfƒ‹‚Å‚Íİ’è‚Å‚«‚È‚¢CropSize
+		if (n % info.force_divisible_crop_size != 0) // ã“ã®ãƒ¢ãƒ‡ãƒ«ã§ã¯è¨­å®šã§ããªã„CropSize
 			continue;
 
 		tstring str(to_tstring(n));
@@ -585,12 +585,12 @@ void DialogEvent::SetCropSizeList(const boost::filesystem::path & input_path)
 
 	SendMessage(hcrop, CB_ADDSTRING, 0, (LPARAM)TEXT("-----------------------"));
 
-	// CropSizeList‚Ì’l‚ğ’Ç‰Á‚µ‚Ä‚¢‚­
+	// CropSizeListã®å€¤ã‚’è¿½åŠ ã—ã¦ã„ã
 	mindiff = INT_MAX;
 	int defaultListIndex = -1;
 	for (const auto n : CropSizeList)
 	{
-		if (n % info.force_divisible_crop_size != 0) // ‚±‚Ìƒ‚ƒfƒ‹‚Å‚Íİ’è‚Å‚«‚È‚¢CropSize
+		if (n % info.force_divisible_crop_size != 0) // ã“ã®ãƒ¢ãƒ‡ãƒ«ã§ã¯è¨­å®šã§ããªã„CropSize
 			continue;
 
 		tstring str(to_tstring(n));
@@ -622,7 +622,7 @@ void DialogEvent::ProcessWaifu2x()
 	{
 		const boost::filesystem::path input_path(boost::filesystem::absolute(input));
 
-		if (boost::filesystem::is_directory(input_path)) // input_path‚ªƒtƒHƒ‹ƒ_‚È‚ç‚»‚ÌƒfƒBƒŒƒNƒgƒŠˆÈ‰º‚Ì‰æ‘œƒtƒ@ƒCƒ‹‚ğˆêŠ‡•ÏŠ·
+		if (boost::filesystem::is_directory(input_path)) // input_pathãŒãƒ•ã‚©ãƒ«ãƒ€ãªã‚‰ãã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªä»¥ä¸‹ã®ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä¸€æ‹¬å¤‰æ›
 		{
 			boost::filesystem::path output_path(output_str);
 
@@ -634,12 +634,12 @@ void DialogEvent::ProcessWaifu2x()
 				{
 					SendMessage(dh, WM_FAILD_CREATE_DIR, (WPARAM)&output_path, 0);
 					PostMessage(dh, WM_END_THREAD, 0, 0);
-					// printf("o—ÍƒtƒHƒ‹ƒ_u%sv‚Ìì¬‚É¸”s‚µ‚Ü‚µ‚½\n", output_path.string().c_str());
+					// printf("å‡ºåŠ›ãƒ•ã‚©ãƒ«ãƒ€ã€Œ%sã€ã®ä½œæˆã«å¤±æ•—ã—ã¾ã—ãŸ\n", output_path.string().c_str());
 					return;
 				}
 			}
 
-			// •ÏŠ·‚·‚é‰æ‘œ‚Ì“ü—ÍAo—ÍƒpƒX‚ğæ“¾
+			// å¤‰æ›ã™ã‚‹ç”»åƒã®å…¥åŠ›ã€å‡ºåŠ›ãƒ‘ã‚¹ã‚’å–å¾—
 			const auto func = [this, &input_path, &output_path, &file_paths](const boost::filesystem::path &path)
 			{
 				BOOST_FOREACH(const boost::filesystem::path& p, std::make_pair(boost::filesystem::recursive_directory_iterator(path),
@@ -683,7 +683,7 @@ void DialogEvent::ProcessWaifu2x()
 					{
 						SendMessage(dh, WM_FAILD_CREATE_DIR, (WPARAM)&out_dir, 0);
 						PostMessage(dh, WM_END_THREAD, 0, 0);
-						//printf("o—ÍƒtƒHƒ‹ƒ_u%sv‚Ìì¬‚É¸”s‚µ‚Ü‚µ‚½\n", out_absolute.string().c_str());
+						//printf("å‡ºåŠ›ãƒ•ã‚©ãƒ«ãƒ€ã€Œ%sã€ã®ä½œæˆã«å¤±æ•—ã—ã¾ã—ãŸ\n", out_absolute.string().c_str());
 						return;
 					}
 				}
@@ -700,7 +700,7 @@ void DialogEvent::ProcessWaifu2x()
 				{
 					SendMessage(dh, WM_FAILD_CREATE_DIR, (WPARAM)&outDir, 0);
 					PostMessage(dh, WM_END_THREAD, 0, 0);
-					// printf("o—ÍƒtƒHƒ‹ƒ_u%sv‚Ìì¬‚É¸”s‚µ‚Ü‚µ‚½\n", output_path.string().c_str());
+					// printf("å‡ºåŠ›ãƒ•ã‚©ãƒ«ãƒ€ã€Œ%sã€ã®ä½œæˆã«å¤±æ•—ã—ã¾ã—ãŸ\n", output_path.string().c_str());
 					return;
 				}
 			}
@@ -720,7 +720,7 @@ void DialogEvent::ProcessWaifu2x()
 			return out.wstring();
 		};
 
-		if (boost::filesystem::is_directory(input_path)) // input_path‚ªƒtƒHƒ‹ƒ_‚È‚ç‚»‚ÌƒfƒBƒŒƒNƒgƒŠˆÈ‰º‚Ì‰æ‘œƒtƒ@ƒCƒ‹‚ğˆêŠ‡•ÏŠ·
+		if (boost::filesystem::is_directory(input_path)) // input_pathãŒãƒ•ã‚©ãƒ«ãƒ€ãªã‚‰ãã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªä»¥ä¸‹ã®ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä¸€æ‹¬å¤‰æ›
 		{
 			if (!boost::filesystem::exists(output_path))
 			{
@@ -728,14 +728,14 @@ void DialogEvent::ProcessWaifu2x()
 				{
 					SendMessage(dh, WM_FAILD_CREATE_DIR, (WPARAM)&output_path, 0);
 					PostMessage(dh, WM_END_THREAD, 0, 0);
-					// printf("o—ÍƒtƒHƒ‹ƒ_u%sv‚Ìì¬‚É¸”s‚µ‚Ü‚µ‚½\n", output_path.string().c_str());
+					// printf("å‡ºåŠ›ãƒ•ã‚©ãƒ«ãƒ€ã€Œ%sã€ã®ä½œæˆã«å¤±æ•—ã—ã¾ã—ãŸ\n", output_path.string().c_str());
 					return;
 				}
 			}
 
 			const auto inputDirName = input_path.filename();
 
-			// •ÏŠ·‚·‚é‰æ‘œ‚Ì“ü—ÍAo—ÍƒpƒX‚ğæ“¾
+			// å¤‰æ›ã™ã‚‹ç”»åƒã®å…¥åŠ›ã€å‡ºåŠ›ãƒ‘ã‚¹ã‚’å–å¾—
 			const auto func = [this, &input_path, &output_path, &file_paths, &inputDirName](const boost::filesystem::path &path)
 			{
 				BOOST_FOREACH(const boost::filesystem::path& p, std::make_pair(boost::filesystem::recursive_directory_iterator(path),
@@ -779,7 +779,7 @@ void DialogEvent::ProcessWaifu2x()
 					{
 						SendMessage(dh, WM_FAILD_CREATE_DIR, (WPARAM)&out_dir, 0);
 						PostMessage(dh, WM_END_THREAD, 0, 0);
-						//printf("o—ÍƒtƒHƒ‹ƒ_u%sv‚Ìì¬‚É¸”s‚µ‚Ü‚µ‚½\n", out_absolute.string().c_str());
+						//printf("å‡ºåŠ›ãƒ•ã‚©ãƒ«ãƒ€ã€Œ%sã€ã®ä½œæˆã«å¤±æ•—ã—ã¾ã—ãŸ\n", out_absolute.string().c_str());
 						return;
 					}
 				}
@@ -795,7 +795,7 @@ void DialogEvent::ProcessWaifu2x()
 				{
 					SendMessage(dh, WM_FAILD_CREATE_DIR, (WPARAM)&outDir, 0);
 					PostMessage(dh, WM_END_THREAD, 0, 0);
-					// printf("o—ÍƒtƒHƒ‹ƒ_u%sv‚Ìì¬‚É¸”s‚µ‚Ü‚µ‚½\n", output_path.string().c_str());
+					// printf("å‡ºåŠ›ãƒ•ã‚©ãƒ«ãƒ€ã€Œ%sã€ã®ä½œæˆã«å¤±æ•—ã—ã¾ã—ãŸ\n", output_path.string().c_str());
 					return;
 				}
 			}
@@ -875,7 +875,7 @@ void DialogEvent::ProcessWaifu2x()
 		const auto fileNum = file_paths.size();
 		for (const auto &p : file_paths)
 		{
-			if (isOutputNoOverwrite && boost::filesystem::exists(p.second)) // ã‘‚«‹Ö~‚È‚çƒƒbƒZ[ƒW•\¦‚µ‚Ä–³‹
+			if (isOutputNoOverwrite && boost::filesystem::exists(p.second)) // ä¸Šæ›¸ãç¦æ­¢ãªã‚‰ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸è¡¨ç¤ºã—ã¦ç„¡è¦–
 			{
 				SendMessage(dh, WM_ON_WAIFU2X_NO_OVERWRITE, (WPARAM)p.first.c_str(), (LPARAM)p.second.c_str());
 
@@ -907,7 +907,7 @@ void DialogEvent::ProcessWaifu2x()
 			else if (count >= 2)
 				processeNum++;
 
-			if (count == 1) // Å‰‚Ìˆê‰ñ–Ú‚Í“ñ‰ñ–ÚˆÈ~‚æ‚è’x‚­‚È‚é‚Í‚¸‚È‚Ì‚Åc‚èŠÔ‚ÌŒvZ‚É‚Íg‚í‚È‚¢
+			if (count == 1) // æœ€åˆã®ä¸€å›ç›®ã¯äºŒå›ç›®ä»¥é™ã‚ˆã‚Šé…ããªã‚‹ã¯ãšãªã®ã§æ®‹ã‚Šæ™‚é–“ã®è¨ˆç®—ã«ã¯ä½¿ã‚ãªã„
 				startTime = timeGetTime();
 			if (count >= 2)
 			{
@@ -939,7 +939,7 @@ void DialogEvent::ProcessWaifu2x()
 	PostMessage(dh, WM_END_THREAD, 0, 0);
 }
 
-void DialogEvent::ReplaceAddString() // ƒtƒ@ƒCƒ‹–¼‚Ì©“®İ’è•”•ª‚ğ‘‚«Š·‚¦‚é
+void DialogEvent::ReplaceAddString() // ãƒ•ã‚¡ã‚¤ãƒ«åã®è‡ªå‹•è¨­å®šéƒ¨åˆ†ã‚’æ›¸ãæ›ãˆã‚‹
 {
 	SyncMember(true, true);
 
@@ -1177,14 +1177,14 @@ static BOOL CALLBACK EnumChildWindowsProc(HWND hWnd, LPARAM lParam)
 	return TRUE;
 }
 
-// “ü—ÍƒpƒX‚ğ‘I‘ğ‚·‚é
+// å…¥åŠ›ãƒ‘ã‚¹ã‚’é¸æŠã™ã‚‹
 UINT_PTR DialogEvent::OFNHookProcIn(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uiMsg)
 	{
 	case WM_INITDIALOG:
 	{
-		// ƒ_ƒCƒAƒƒO‚ğ’†‰›‚É•\¦
+		// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’ä¸­å¤®ã«è¡¨ç¤º
 
 		HWND hParent = GetParent(hdlg);
 
@@ -1208,7 +1208,7 @@ UINT_PTR DialogEvent::OFNHookProcIn(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
 
 	case WM_NOTIFY:
 	{
-		// ƒtƒ@ƒCƒ‹‚ÆƒtƒHƒ‹ƒ_‚ğ‘I‘ğ‚Å‚«‚é‚æ‚¤‚É‚·‚é
+		// ãƒ•ã‚¡ã‚¤ãƒ«ã¨ãƒ•ã‚©ãƒ«ãƒ€ã‚’é¸æŠã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
 
 		NMHDR *pnmh;
 		OFNOTIFY *pnot;
@@ -1290,14 +1290,14 @@ UINT_PTR DialogEvent::OFNHookProcIn(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
 	return 0L;
 }
 
-// o—ÍƒpƒX‚ğ‘I‘ğ‚·‚é
+// å‡ºåŠ›ãƒ‘ã‚¹ã‚’é¸æŠã™ã‚‹
 UINT_PTR DialogEvent::OFNHookProcOut(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uiMsg)
 	{
 	case WM_INITDIALOG:
 	{
-		// ƒ_ƒCƒAƒƒO‚ğ’†‰›‚É•\¦
+		// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’ä¸­å¤®ã«è¡¨ç¤º
 
 		HWND hParent = GetParent(hdlg);
 
@@ -1321,7 +1321,7 @@ UINT_PTR DialogEvent::OFNHookProcOut(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARA
 
 	case WM_NOTIFY:
 	{
-		// ƒtƒHƒ‹ƒ_‚Ì‚İ‚ğ‘I‘ğ‚Å‚«‚é‚æ‚¤‚É‚·‚é
+		// ãƒ•ã‚©ãƒ«ãƒ€ã®ã¿ã‚’é¸æŠã§ãã‚‹ã‚ˆã†ã«ã™ã‚‹
 
 		NMHDR *pnmh;
 		OFNOTIFY *pnot;
@@ -1405,7 +1405,7 @@ void DialogEvent::Exec(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		}
 	}
 
-	SaveIni(true); // ‹­§I—¹‚Ì‰Â”\«‚àl‚¦‚ÄÀs‚Éİ’è•Û‘¶
+	SaveIni(true); // å¼·åˆ¶çµ‚äº†ã®å¯èƒ½æ€§ã‚‚è€ƒãˆã¦å®Ÿè¡Œæ™‚ã«è¨­å®šä¿å­˜
 
 	SendMessage(GetDlgItem(dh, IDC_PROGRESS), PBM_SETPOS, 0, 0);
 	cancelFlag = false;
@@ -1442,7 +1442,7 @@ void DialogEvent::WaitThreadExit(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID
 		{
 			AddLogMessage(langStringList.GetString(L"MessageTransSuccess").c_str());
 
-			if (isCommandLineStart && isArgStartSuccessFinish) // ƒRƒ}ƒ“ƒhƒ‰ƒCƒ“ˆø”‚ğ“n‚³‚ê‚Ä‹N“®‚µ‚ÄA•ÏŠ·‚É¬Œ÷‚µ‚½‚çI—¹‚·‚é(ƒtƒ‰ƒOİ’è‚Ì‚İ)
+			if (isCommandLineStart && isArgStartSuccessFinish) // ã‚³ãƒãƒ³ãƒ‰ãƒ©ã‚¤ãƒ³å¼•æ•°ã‚’æ¸¡ã•ã‚Œã¦èµ·å‹•ã—ã¦ã€å¤‰æ›ã«æˆåŠŸã—ãŸã‚‰çµ‚äº†ã™ã‚‹(ãƒ•ãƒ©ã‚°è¨­å®šæ™‚ã®ã¿)
 				endFlag = true;
 		}
 
@@ -1487,7 +1487,7 @@ void DialogEvent::Timer(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 			_stprintf_s(msg, TEXT("%s: %02d:%02d:%02d"), langStringList.GetString(L"MessageTimeLeft").c_str(), hour, min, sec);
 			msg[_countof(msg) - 1] = TEXT('\0');
 
-			// •\¦
+			// è¡¨ç¤º
 			SetWindowText(GetDlgItem(dh, IDC_EDIT_LOG), msg);
 		}
 	}
@@ -1672,11 +1672,11 @@ void DialogEvent::SetDepthAndQuality(const bool SetDefaultQuality)
 			oldDepth = boost::lexical_cast<int>(oldDepthStr);
 	}
 
-	// [“x‚ÌƒŠƒXƒg‰Šú‰»
+	// æ·±åº¦ã®ãƒªã‚¹ãƒˆåˆæœŸåŒ–
 	while (SendMessage(houtDepth, CB_GETCOUNT, 0, 0) != 0)
 		SendMessage(houtDepth, CB_DELETESTRING, 0, 0);
 
-	// [“x‚ÌƒŠƒXƒg’Ç‰Á
+	// æ·±åº¦ã®ãƒªã‚¹ãƒˆè¿½åŠ 
 	size_t defaultIndex = 0;
 	for (size_t i = 0; i < elm.depthList.size(); i++)
 	{
@@ -1696,7 +1696,7 @@ void DialogEvent::SetDepthAndQuality(const bool SetDefaultQuality)
 	else
 		EnableWindow(houtDepth, TRUE);
 
-	if (!elm.imageQualityStart || !elm.imageQualityEnd || !elm.imageQualityDefault) // ‰æ¿İ’è‚Í–³Œø
+	if (!elm.imageQualityStart || !elm.imageQualityEnd || !elm.imageQualityDefault) // ç”»è³ªè¨­å®šã¯ç„¡åŠ¹
 	{
 		EnableWindow(GetDlgItem(dh, IDC_EDIT_OUT_QUALITY), FALSE);
 		SetWindowTextW(GetDlgItem(dh, IDC_EDIT_OUT_QUALITY), L"");
@@ -1716,7 +1716,7 @@ void DialogEvent::SetDepthAndQuality(const bool SetDefaultQuality)
 		const auto wstr = langStringList.GetString(L"IDC_STATIC_OUTPUT_QUALITY");
 
 		const auto addstr = std::wstring(L" (") + boost::lexical_cast<std::wstring>(*elm.imageQualityStart)
-			+ L"`" + boost::lexical_cast<std::wstring>(*elm.imageQualityEnd) + L")";
+			+ L"ã€œ" + boost::lexical_cast<std::wstring>(*elm.imageQualityEnd) + L")";
 		SetWindowTextW(GetDlgItem(dh, IDC_STATIC_OUTPUT_QUALITY), (wstr + addstr).c_str());
 	}
 }
@@ -1775,7 +1775,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 			}
 		}
 
-		if (langName.length() > 0) // ‘O‰ñ‹N“®‚ÌŒ¾Œê‚ª‚ ‚Á‚½‚ç‚»‚Á‚¿‚ğ—Dæ
+		if (langName.length() > 0) // å‰å›èµ·å‹•æ™‚ã®è¨€èªãŒã‚ã£ãŸã‚‰ãã£ã¡ã‚’å„ªå…ˆ
 		{
 			for (size_t i = 0; i < list.size(); i++)
 			{
@@ -1794,7 +1794,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		SendMessage(hlang, CB_SETCURSEL, defaultListIndex, 0);
 	}
 
-	// ’v–½“IƒGƒ‰[‚ª”­¶‚µ‚½‚ÉLogFatalFunc‚ğŒÄ‚Ño‚·‚æ‚¤‚É‚·‚é
+	// è‡´å‘½çš„ã‚¨ãƒ©ãƒ¼ãŒç™ºç”Ÿã—ãŸæ™‚ã«LogFatalFuncã‚’å‘¼ã³å‡ºã™ã‚ˆã†ã«ã™ã‚‹
 	google::InstallFailureFunction(LogFatalFunc);
 
 	SetWindowTextLang();
@@ -1828,7 +1828,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 	{
 		HWND hbatch = GetDlgItem(dh, IDC_COMBO_BATCH_SIZE);
 
-		// ƒoƒbƒ`ƒTƒCƒYƒŠƒXƒg‚É”—ñ‚ğ“Ë‚Á‚ñ‚Å‚¢‚­
+		// ãƒãƒƒãƒã‚µã‚¤ã‚ºãƒªã‚¹ãƒˆã«æ•°åˆ—ã‚’çªã£è¾¼ã‚“ã§ã„ã
 		int mindiff = INT_MAX;
 		int defaultListIndex = -1;
 		for(int i = 1; i <= MaxBatchSizeList; i++)
@@ -2092,12 +2092,12 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 		if (!Waifu2x::GetInfo(model_dir, info))
 			info.force_divisible_crop_size = 1;
 
-		// CropSizeList‚Ì’l‚ğ’Ç‰Á‚µ‚Ä‚¢‚­
+		// CropSizeListã®å€¤ã‚’è¿½åŠ ã—ã¦ã„ã
 		int mindiff = INT_MAX;
 		int defaultListIndex = -1;
 		for (const auto n : CropSizeList)
 		{
-			if (n % info.force_divisible_crop_size != 0) // ‚±‚Ìƒ‚ƒfƒ‹‚Å‚Íİ’è‚Å‚«‚È‚¢CropSize
+			if (n % info.force_divisible_crop_size != 0) // ã“ã®ãƒ¢ãƒ‡ãƒ«ã§ã¯è¨­å®šã§ããªã„CropSize
 				continue;
 
 			tstring str(to_tstring(n));
@@ -2140,7 +2140,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 
 	EnableWindow(GetDlgItem(dh, IDC_BUTTON_CANCEL), FALSE);
 
-	// ‘O‰ñ‚ÌŠg’£qİ’èŠÖ˜A‚ğ•œŒ³
+	// å‰å›ã®æ‹¡å¼µå­è¨­å®šé–¢é€£ã‚’å¾©å…ƒ
 	HWND houtext = GetDlgItem(dh, IDC_COMBO_OUT_EXT);
 
 	size_t defaultIndex = 0;
@@ -2176,11 +2176,11 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 			// definition of command line arguments
 			TCLAPW::CmdLine cmd(L"waifu2x reimplementation using Caffe", L' ', L"1.0.0");
 
-			// GUI‚Å‚Í-i‚ğ•t‚¯‚È‚¢
+			// GUIã§ã¯-iã‚’ä»˜ã‘ãªã„
 			TCLAPW::UnlabeledMultiArg<std::wstring> cmdInputFile(L"input_file_paths", L"input file paths", false,
 				L"string", cmd);
 
-			// GUI‚Å‚Ío—ÍæƒtƒHƒ‹ƒ_‚Ì‚İ‚Ìw’è
+			// GUIã§ã¯å‡ºåŠ›å…ˆãƒ•ã‚©ãƒ«ãƒ€ã®ã¿ã®æŒ‡å®š
 			TCLAPW::ValueArg<std::wstring> cmdOutputDir(L"o", L"output_folder",
 				L"path to output image folder", false,
 				L"", L"string", cmd);
@@ -2255,7 +2255,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 			TCLAPW::ValueArg<int> cmdTTA(L"t", L"tta", L"8x slower and slightly high quality",
 				false, 0, &cmdTTAConstraint, cmd);
 
-			// GUI“Æ©
+			// GUIç‹¬è‡ª
 			TCLAPW::ValuesConstraint<int> cmdAutoStartConstraint(cmdBoolConstraintV);
 			TCLAPW::ValueArg<int> cmdAutoStart(L"", L"auto_start", L"to run automatically at startup",
 				false, 0, &cmdAutoStartConstraint, cmd);
@@ -2570,7 +2570,7 @@ void DialogEvent::Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData)
 					OnSetInputFilePath(vi[0].c_str());
 				}
 
-				if (isArgStartAuto) // ˆø”w’è‚³‚ê‚½‚ç©“®‚ÅÀs(ƒtƒ‰ƒOİ’è‚Ì‚İ)
+				if (isArgStartAuto) // å¼•æ•°æŒ‡å®šã•ã‚ŒãŸã‚‰è‡ªå‹•ã§å®Ÿè¡Œ(ãƒ•ãƒ©ã‚°è¨­å®šæ™‚ã®ã¿)
 				{
 					isCommandLineStart = true;
 					::PostMessage(GetDlgItem(dh, IDC_BUTTON_EXEC), BM_CLICK, 0, 0);
@@ -2646,7 +2646,7 @@ void DialogEvent::OnModeChange(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID l
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_HEIGHT), TRUE);
 		EnableWindow(GetDlgItem(dh, IDC_RADIO_SCALE_WIDTH_HEIGHT), TRUE);
 
-		ScaleRadio(NULL, NULL, NULL, NULL); // ‚±‚±‚ÅReplaceAddString()‚â‚é‚©‚çreturn
+		ScaleRadio(NULL, NULL, NULL, NULL); // ã“ã“ã§ReplaceAddString()ã‚„ã‚‹ã‹ã‚‰return
 		return;
 	}
 	else
@@ -2773,7 +2773,7 @@ LRESULT DialogEvent::OnSetInputFilePath(const TCHAR * tPath)
 	{
 		HWND ho = GetDlgItem(dh, IDC_EDIT_OUTPUT);
 
-		if (output_dir.length() == 0) // o—ÍƒpƒX–¢İ’è‚È‚ç“ü—Íƒtƒ@ƒCƒ‹‚ÌƒtƒHƒ‹ƒ_
+		if (output_dir.length() == 0) // å‡ºåŠ›ãƒ‘ã‚¹æœªè¨­å®šãªã‚‰å…¥åŠ›ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ•ã‚©ãƒ«ãƒ€
 			outpath = path.branch_path();
 
 		const tstring addstr(AddName());
@@ -2788,7 +2788,7 @@ LRESULT DialogEvent::OnSetInputFilePath(const TCHAR * tPath)
 	{
 		HWND ho = GetDlgItem(dh, IDC_EDIT_OUTPUT);
 
-		if (output_dir.length() == 0) // o—ÍƒpƒX–¢İ’è‚È‚ç“ü—ÍƒtƒHƒ‹ƒ_‚Æ“¯‚¶ƒtƒHƒ‹ƒ_
+		if (output_dir.length() == 0) // å‡ºåŠ›ãƒ‘ã‚¹æœªè¨­å®šãªã‚‰å…¥åŠ›ãƒ•ã‚©ãƒ«ãƒ€ã¨åŒã˜ãƒ•ã‚©ãƒ«ãƒ€
 			outpath = path.branch_path();
 
 		tstring outputFileName = getTString(path.filename());
@@ -2831,7 +2831,7 @@ LRESULT DialogEvent::OnSetInputFilePath()
 
 		boost::filesystem::path outpath(output_dir);
 
-		if (output_dir.length() == 0) // o—ÍƒpƒX–¢İ’è‚È‚ç“ü—Íƒtƒ@ƒCƒ‹‚Æ“¯‚¶ƒtƒHƒ‹ƒ_
+		if (output_dir.length() == 0) // å‡ºåŠ›ãƒ‘ã‚¹æœªè¨­å®šãªã‚‰å…¥åŠ›ãƒ•ã‚¡ã‚¤ãƒ«ã¨åŒã˜ãƒ•ã‚©ãƒ«ãƒ€
 		{
 			outpath = input_str_multi[0];
 			outpath = outpath.branch_path();
@@ -2911,13 +2911,13 @@ LRESULT DialogEvent::OnSetOutputFilePath(const TCHAR * tPath)
 	return 0L;
 }
 
-// ‚±‚±‚Å“n‚³‚ê‚éhWnd‚ÍIDC_EDIT‚ÌHWND(ƒRƒ“ƒgƒ[ƒ‹‚ÌƒCƒxƒ“ƒg‚¾‚©‚ç)
+// ã“ã“ã§æ¸¡ã•ã‚Œã‚‹hWndã¯IDC_EDITã®HWND(ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã®ã‚¤ãƒ™ãƒ³ãƒˆã ã‹ã‚‰)
 
 LRESULT DialogEvent::DropInput(HWND hWnd, WPARAM wParam, LPARAM lParam, WNDPROC OrgSubWnd, LPVOID lpData)
 {
 	TCHAR szTmp[AR_PATH_MAX];
 
-	// ƒhƒƒbƒv‚³‚ê‚½ƒtƒ@ƒCƒ‹”‚ğæ“¾
+	// ãƒ‰ãƒ­ãƒƒãƒ—ã•ã‚ŒãŸãƒ•ã‚¡ã‚¤ãƒ«æ•°ã‚’å–å¾—
 	UINT FileNum = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, szTmp, _countof(szTmp));
 	if (FileNum > 0)
 	{
@@ -2958,13 +2958,13 @@ LRESULT DialogEvent::DropInput(HWND hWnd, WPARAM wParam, LPARAM lParam, WNDPROC 
 	return 0L;
 }
 
-// ‚±‚±‚Å“n‚³‚ê‚éhWnd‚ÍIDC_EDIT‚ÌHWND(ƒRƒ“ƒgƒ[ƒ‹‚ÌƒCƒxƒ“ƒg‚¾‚©‚ç)
+// ã“ã“ã§æ¸¡ã•ã‚Œã‚‹hWndã¯IDC_EDITã®HWND(ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã®ã‚¤ãƒ™ãƒ³ãƒˆã ã‹ã‚‰)
 
 LRESULT DialogEvent::DropOutput(HWND hWnd, WPARAM wParam, LPARAM lParam, WNDPROC OrgSubWnd, LPVOID lpData)
 {
 	TCHAR szTmp[AR_PATH_MAX];
 
-	// ƒhƒƒbƒv‚³‚ê‚½ƒtƒ@ƒCƒ‹”‚ğæ“¾
+	// ãƒ‰ãƒ­ãƒƒãƒ—ã•ã‚ŒãŸãƒ•ã‚¡ã‚¤ãƒ«æ•°ã‚’å–å¾—
 	UINT FileNum = DragQueryFile((HDROP)wParam, 0xFFFFFFFF, szTmp, AR_PATH_MAX);
 	if (FileNum >= 1)
 	{

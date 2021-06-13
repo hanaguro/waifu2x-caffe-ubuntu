@@ -5,12 +5,12 @@
 #include "GUICommon.h"
 
 
-// ’ˆÓ
-// ƒCƒxƒ“ƒgƒnƒ“ƒhƒ‰‚ÅSetWindowLong‚ÅGWL_USERDATA‚ð‘‚«Š·‚¦‚½ê‡‚¨‚©‚µ‚­‚È‚é
+// æ³¨æ„
+// ã‚¤ãƒ™ãƒ³ãƒˆãƒãƒ³ãƒ‰ãƒ©ã§SetWindowLongã§GWL_USERDATAã‚’æ›¸ãæ›ãˆãŸå ´åˆãŠã‹ã—ããªã‚‹
 class CControl
 {
 private:
-	// ƒRƒs[A‘ã“ü‚Ì‹ÖŽ~
+	// ã‚³ãƒ”ãƒ¼ã€ä»£å…¥ã®ç¦æ­¢
 	CControl(const CControl&);
 	CControl& operator =(const CControl&);
 
@@ -41,39 +41,39 @@ protected:
 	WNDPROC OrgSubWnd;
 	int ResourceID;
 
-	// ƒ_ƒCƒAƒƒOƒvƒƒV[ƒWƒƒ(ŽÀŽ¿)
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£(å®Ÿè³ª)
 	virtual LRESULT SubProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 public:
-	// ƒRƒ“ƒXƒgƒ‰ƒNƒ^(ƒŠƒ\[ƒXID‚ðŽw’è)
+	// ã‚³ãƒ³ã‚¹ãƒˆãƒ©ã‚¯ã‚¿(ãƒªã‚½ãƒ¼ã‚¹IDã‚’æŒ‡å®š)
 	CControl(const UINT ID);
 	CControl();
 
-	// ‰¼‘zƒfƒXƒgƒ‰ƒNƒ^(‰½‚à‚µ‚È‚¢)
+	// ä»®æƒ³ãƒ‡ã‚¹ãƒˆãƒ©ã‚¯ã‚¿(ä½•ã‚‚ã—ãªã„)
 	virtual ~CControl();
 
-	// ˆê‚Â‚ÌƒƒbƒZ[ƒW‚É‚Â‚«ˆê‚Â‚ÌŠÖ”‚µ‚©“o˜^‚Å‚«‚È‚¢.
-	// ‚·‚Å‚É‚ ‚Á‚½ê‡‚Íã‘‚«‚³‚ê‚é.
-	// lpData‚Í“o˜^‚µ‚½ŠÖ”‚É—^‚¦‚éD‚«‚Èˆø”.
-	// “o˜^‚Å‚«‚éŠÖ”‚ÍA
+	// ä¸€ã¤ã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã«ã¤ãä¸€ã¤ã®é–¢æ•°ã—ã‹ç™»éŒ²ã§ããªã„.
+	// ã™ã§ã«ã‚ã£ãŸå ´åˆã¯ä¸Šæ›¸ãã•ã‚Œã‚‹.
+	// lpDataã¯ç™»éŒ²ã—ãŸé–¢æ•°ã«ä¸Žãˆã‚‹å¥½ããªå¼•æ•°.
+	// ç™»éŒ²ã§ãã‚‹é–¢æ•°ã¯ã€
 	// BOOL Create(HWND hWnd, WPARAM wParam, LPARAM lParam, LPVOID lpData);
-	// ‚Ì‚æ‚¤‚ÈŠÖ”.
-	// –ß‚è’l‚ÍTRUE‚Å‚àFALSE‚Å‚à‚æ‚¢.
+	// ã®ã‚ˆã†ãªé–¢æ•°.
+	// æˆ»ã‚Šå€¤ã¯TRUEã§ã‚‚FALSEã§ã‚‚ã‚ˆã„.
 	void SetEventCallBack(const CustomEventFunc &func, const LPVOID lpData, const UINT uMsg);
 
-	// ƒJƒXƒ^ƒ€ƒRƒ“ƒgƒ[ƒ‹‚ð“o˜^
+	// ã‚«ã‚¹ã‚¿ãƒ ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ã‚’ç™»éŒ²
 	BOOL Register(LPCTSTR ClassName, const HINSTANCE hInstance);
 
-	// ƒ†[ƒU[‚ªŽg‚¤‚Ì‚Í‚±‚±‚Ü‚Å
+	// ãƒ¦ãƒ¼ã‚¶ãƒ¼ãŒä½¿ã†ã®ã¯ã“ã“ã¾ã§
 
 
 	void RegisterFunc(HWND hWnd);
 
 	int GetResourceID();
 
-	// ƒ_ƒCƒAƒƒOƒvƒƒV[ƒWƒƒ(Œ`Ž®ã)
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£(å½¢å¼ä¸Š)
 	static LRESULT CALLBACK DispatchSubProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-	// ƒJƒXƒ^ƒ€ƒRƒ“ƒgƒ[ƒ‹ƒvƒƒV[ƒWƒƒ
+	// ã‚«ã‚¹ã‚¿ãƒ ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ«ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£
 	static LRESULT CALLBACK DispatchCustomProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };

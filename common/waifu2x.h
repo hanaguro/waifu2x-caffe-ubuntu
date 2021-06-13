@@ -29,8 +29,8 @@ class stImage;
 class Factor
 {
 private:
-	double mNumerator; // •ªq
-	double mDenominator; // •ê”
+	double mNumerator; // åˆ†å­
+	double mDenominator; // æ¯æ•°
 
 public:
 	Factor() : mNumerator(1.0), mDenominator(1.0)
@@ -141,8 +141,8 @@ private:
 	std::shared_ptr<cNet> mNoiseNet;
 	std::shared_ptr<cNet> mScaleNet;
 
-	int mInputPlane; // ƒlƒbƒg‚Ö‚Ì“ü—Íƒ`ƒƒƒ“ƒlƒ‹”
-	int mMaxNetOffset; // ƒlƒbƒg‚É“ü—Í‚·‚é‚Æ‚Ç‚ê‚­‚ç‚¢í‚ê‚é‚©
+	int mInputPlane; // ãƒãƒƒãƒˆã¸ã®å…¥åŠ›ãƒãƒ£ãƒ³ãƒãƒ«æ•°
+	int mMaxNetOffset; // ãƒãƒƒãƒˆã«å…¥åŠ›ã™ã‚‹ã¨ã©ã‚Œãã‚‰ã„å‰Šã‚Œã‚‹ã‹
 	bool mHasNoiseScaleOnly;
 
 	float *mOutputBlock;
@@ -193,11 +193,11 @@ public:
 		const boost::optional<int> output_quality = boost::optional<int>(), const int output_depth = 8, const bool use_tta = false,
 		const int batch_size = 1);
 
-	// factor: ”{—¦
-	// source: (4ƒ`ƒƒƒ“ƒlƒ‹‚Ìê‡‚Í)RGBA‚È‰æ‘f”z—ñ
-	// dest: (4ƒ`ƒƒƒ“ƒlƒ‹‚Ìê‡‚Í)ˆ—‚µ‚½RGBA‚È‰æ‘f”z—ñ
-	// in_stride: source‚ÌƒXƒgƒ‰ƒCƒh(ƒoƒCƒg’PˆÊ)
-	// out_stride: dest‚ÌƒXƒgƒ‰ƒCƒh(ƒoƒCƒg’PˆÊ)
+	// factor: å€ç‡
+	// source: (4ãƒãƒ£ãƒ³ãƒãƒ«ã®å ´åˆã¯)RGBAãªç”»ç´ é…åˆ—
+	// dest: (4ãƒãƒ£ãƒ³ãƒãƒ«ã®å ´åˆã¯)å‡¦ç†ã—ãŸRGBAãªç”»ç´ é…åˆ—
+	// in_stride: sourceã®ã‚¹ãƒˆãƒ©ã‚¤ãƒ‰(ãƒã‚¤ãƒˆå˜ä½)
+	// out_stride: destã®ã‚¹ãƒˆãƒ©ã‚¤ãƒ‰(ãƒã‚¤ãƒˆå˜ä½)
 	eWaifu2xError waifu2x(const double factor, const void* source, void* dest, const int width, const int height,
 		const int in_channel, const int in_stride, const int out_channel, const int out_stride,
 		const int crop_w = 128, const int crop_h = 128,  const bool use_tta = false, const int batch_size = 1);

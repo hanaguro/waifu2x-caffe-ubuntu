@@ -2,7 +2,7 @@
 #include "CDialogBase.h"
 
 
-// ƒ_ƒCƒAƒƒO‚ðì¬‚·‚é
+// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã‚’ä½œæˆã™ã‚‹
 INT_PTR CDialogBase::DoModal(HINSTANCE hInstance, int iDialogId, HWND hWndParent)
 { 
 	return DialogBoxParam(hInstance, MAKEINTRESOURCE(iDialogId), hWndParent, &DispatchDialogProc, (LPARAM)this);
@@ -13,18 +13,18 @@ HWND CDialogBase::GetDialogHWND(void)
 	return hDialog;
 }
 
-// ƒ_ƒCƒAƒƒOƒvƒƒV[ƒWƒƒ(Œ`Ž®ã) 
+// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£(å½¢å¼ä¸Š) 
 INT_PTR CALLBACK CDialogBase::DispatchDialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	// ƒ_ƒCƒAƒƒO‚Ì 32 ƒrƒbƒg®”‚ÉŠi”[‚³‚ê‚Ä‚¢‚é  
-	// this ƒ|ƒCƒ“ƒ^‚ðŽæ‚è‚¾‚·
+	// ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã® 32 ãƒ“ãƒƒãƒˆæ•´æ•°ã«æ ¼ç´ã•ã‚Œã¦ã„ã‚‹  
+	// this ãƒã‚¤ãƒ³ã‚¿ã‚’å–ã‚Šã ã™
 	CDialogBase *pcDialog = (CDialogBase *)GetWindowLongPtr(hWnd, GWLP_USERDATA); 
 	if(pcDialog == NULL) 
 	{
 		if(uMsg == WM_INITDIALOG || uMsg == WM_CREATE) 
 		{ 
-			// ’¼‘O‚É DialogBoxParam() ‚ªŒÄ‚Î‚ê‚Ä‚éê‡
-			// this ƒ|ƒCƒ“ƒ^‚ðƒ_ƒCƒAƒƒO‚Ìƒ†[ƒU[—Ìˆæ‚É“ü‚ê‚é
+			// ç›´å‰ã« DialogBoxParam() ãŒå‘¼ã°ã‚Œã¦ã‚‹å ´åˆ
+			// this ãƒã‚¤ãƒ³ã‚¿ã‚’ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ã®ãƒ¦ãƒ¼ã‚¶ãƒ¼é ˜åŸŸã«å…¥ã‚Œã‚‹
 			pcDialog = (CDialogBase*)lParam;
 
 			SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)pcDialog);
@@ -36,6 +36,6 @@ INT_PTR CALLBACK CDialogBase::DispatchDialogProc(HWND hWnd, UINT uMsg, WPARAM wP
 		return FALSE; 
 	}
 
-	// ƒƒ“ƒoŠÖ”‚Ìƒ_ƒCƒAƒƒOƒvƒƒV[ƒWƒƒ‚ðŒÄ‚Ño‚· 
+	// ãƒ¡ãƒ³ãƒé–¢æ•°ã®ãƒ€ã‚¤ã‚¢ãƒ­ã‚°ãƒ—ãƒ­ã‚·ãƒ¼ã‚¸ãƒ£ã‚’å‘¼ã³å‡ºã™ 
 	return pcDialog->DialogProc(hWnd, uMsg, wParam, lParam);
 } 

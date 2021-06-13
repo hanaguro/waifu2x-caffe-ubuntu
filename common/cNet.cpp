@@ -289,8 +289,8 @@ Waifu2x::eWaifu2xError cNet::GetInfo(const boost::filesystem::path & info_path, 
 	return Waifu2x::eWaifu2xError_OK;
 }
 
-// ƒ‚ƒfƒ‹ƒtƒ@ƒCƒ‹‚©‚çƒlƒbƒgƒ[ƒN‚ğ\’z
-// process‚Åcudnn‚ªw’è‚³‚ê‚È‚©‚Á‚½ê‡‚ÍcuDNN‚ªŒÄ‚Ño‚³‚ê‚È‚¢‚æ‚¤‚É•ÏX‚·‚é
+// ãƒ¢ãƒ‡ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ã‚’æ§‹ç¯‰
+// processã§cudnnãŒæŒ‡å®šã•ã‚Œãªã‹ã£ãŸå ´åˆã¯cuDNNãŒå‘¼ã³å‡ºã•ã‚Œãªã„ã‚ˆã†ã«å¤‰æ›´ã™ã‚‹
 Waifu2x::eWaifu2xError cNet::ConstractNet(const Waifu2x::eWaifu2xModelType mode, const boost::filesystem::path &model_path, const boost::filesystem::path &param_path, const Waifu2x::stInfo &info, const std::string &process)
 {
 	Waifu2x::eWaifu2xError ret;
@@ -313,7 +313,7 @@ Waifu2x::eWaifu2xError cNet::ConstractNet(const Waifu2x::eWaifu2xModelType mode,
 	if ( retParamBin == Waifu2x::eWaifu2xError_OK &&
 		(retModelBin == Waifu2x::eWaifu2xError_OK || retModelBin == Waifu2x::eWaifu2xError_FailedOpenModelFile))
 	{
-		if (retModelBin == Waifu2x::eWaifu2xError_FailedOpenModelFile) // protobin‚Ì‚İ‚ª“Ç‚İ‚ß‚È‚©‚Á‚½‚Æ‚«‚Íprototxt‚©‚ç“Ç‚İ‚Ş(‚Â‚¢‚Å‚Éprotobin‚à‘‚«‚Ş)
+		if (retModelBin == Waifu2x::eWaifu2xError_FailedOpenModelFile) // protobinã®ã¿ãŒèª­ã¿è¾¼ã‚ãªã‹ã£ãŸã¨ãã¯prototxtã‹ã‚‰èª­ã¿è¾¼ã‚€(ã¤ã„ã§ã«protobinã‚‚æ›¸ãè¾¼ã‚€)
 		{
 			ret = readProtoText(model_path, &param_model);
 			if (ret != Waifu2x::eWaifu2xError_OK)
@@ -353,7 +353,7 @@ Waifu2x::eWaifu2xError cNet::ConstractNet(const Waifu2x::eWaifu2xModelType mode,
 
 void cNet::LoadParamFromInfo(const Waifu2x::eWaifu2xModelType mode, const Waifu2x::stInfo &info)
 {
-	mModelScale = 2; // TODO: “®“I‚Éİ’è‚·‚é‚æ‚¤‚É‚·‚é
+	mModelScale = 2; // TODO: å‹•çš„ã«è¨­å®šã™ã‚‹ã‚ˆã†ã«ã™ã‚‹
 
 	Waifu2x::stInfo::stParam param;
 
@@ -649,7 +649,7 @@ int cNet::GetOutputMemorySize(const int crop_w, const int crop_h, const int oute
 	return output_block_plane_size * batch_size * sizeof(float);
 }
 
-// ƒlƒbƒgƒ[ƒN‚ğg‚Á‚Ä‰æ‘œ‚ğÄ\’z‚·‚é
+// ãƒãƒƒãƒˆãƒ¯ãƒ¼ã‚¯ã‚’ä½¿ã£ã¦ç”»åƒã‚’å†æ§‹ç¯‰ã™ã‚‹
 Waifu2x::eWaifu2xError cNet::ReconstructImage(const bool UseTTA, const int crop_w, const int crop_h, const int outer_padding, const int batch_size, float *outputBlockBuf, const cv::Mat &inMat, cv::Mat &outMat)
 {
 	const auto InputHeight = inMat.size().height;
@@ -658,27 +658,27 @@ Waifu2x::eWaifu2xError cNet::ReconstructImage(const bool UseTTA, const int crop_
 
 	assert(inMat.channels() == 1 || inMat.channels() == 3);
 
-	const int InputPadding = mNetOffset + outer_padding; // “ü—ÍƒpƒfƒBƒ“ƒO
+	const int InputPadding = mNetOffset + outer_padding; // å…¥åŠ›ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°
 
-	const auto NoPaddingInputWidth = InputWidth - InputPadding * 2; // ƒpƒfƒBƒ“ƒO‚ğœ‚¢‚½“ü—Í‰æ‘œƒTƒCƒY(‰¡)
-	const auto NoPaddingInputHeight = InputHeight - InputPadding * 2; // ƒpƒfƒBƒ“ƒO‚ğœ‚¢‚½“ü—Í‰æ‘œƒTƒCƒY(c)
+	const auto NoPaddingInputWidth = InputWidth - InputPadding * 2; // ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°ã‚’é™¤ã„ãŸå…¥åŠ›ç”»åƒã‚µã‚¤ã‚º(æ¨ª)
+	const auto NoPaddingInputHeight = InputHeight - InputPadding * 2; // ãƒ‘ãƒ‡ã‚£ãƒ³ã‚°ã‚’é™¤ã„ãŸå…¥åŠ›ç”»åƒã‚µã‚¤ã‚º(ç¸¦)
 
 	cv::Mat outim(NoPaddingInputHeight * mInnerScale, NoPaddingInputWidth * mInnerScale, inMat.type());
 
 	// float *imptr = (float *)im.data;
 	float *imptr = (float *)outim.data;
 
-	const auto input_block_width = crop_w + InputPadding * 2; // “ü—ÍƒuƒƒbƒNƒTƒCƒY(‰¡)
-	const auto input_block_height = crop_h + InputPadding * 2; // “ü—ÍƒuƒƒbƒNƒTƒCƒY(c)
+	const auto input_block_width = crop_w + InputPadding * 2; // å…¥åŠ›ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚º(æ¨ª)
+	const auto input_block_height = crop_h + InputPadding * 2; // å…¥åŠ›ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚º(ç¸¦)
 
-	const auto output_block_width = input_block_width * mInnerScale - mNetOffset * 2; // o—ÍƒuƒƒbƒNƒTƒCƒY(‰¡)
-	const auto output_block_height = input_block_height * mInnerScale - mNetOffset * 2; // o—ÍƒuƒƒbƒNƒTƒCƒY(c)
+	const auto output_block_width = input_block_width * mInnerScale - mNetOffset * 2; // å‡ºåŠ›ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚º(æ¨ª)
+	const auto output_block_height = input_block_height * mInnerScale - mNetOffset * 2; // å‡ºåŠ›ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚º(ç¸¦)
 
-	const auto output_crop_block_width = crop_w * mInnerScale; // ƒNƒƒbƒvŒã‚Ìo—ÍƒuƒƒbƒNƒTƒCƒY(‰¡)
-	const auto output_crop_block_height = crop_h * mInnerScale; // ƒNƒƒbƒvŒã‚Ìo—ÍƒuƒƒbƒNƒTƒCƒY(c)
+	const auto output_crop_block_width = crop_w * mInnerScale; // ã‚¯ãƒ­ãƒƒãƒ—å¾Œã®å‡ºåŠ›ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚º(æ¨ª)
+	const auto output_crop_block_height = crop_h * mInnerScale; // ã‚¯ãƒ­ãƒƒãƒ—å¾Œã®å‡ºåŠ›ãƒ–ãƒ­ãƒƒã‚¯ã‚µã‚¤ã‚º(ç¸¦)
 
-	const auto output_crop_w = (output_block_width - crop_w * mInnerScale) / 2; // o—ÍŒã‚ÌƒNƒƒbƒvƒTƒCƒY
-	const auto output_crop_h = (output_block_height - crop_h * mInnerScale) / 2; // o—ÍŒã‚ÌƒNƒƒbƒvƒTƒCƒY
+	const auto output_crop_w = (output_block_width - crop_w * mInnerScale) / 2; // å‡ºåŠ›å¾Œã®ã‚¯ãƒ­ãƒƒãƒ—ã‚µã‚¤ã‚º
+	const auto output_crop_h = (output_block_height - crop_h * mInnerScale) / 2; // å‡ºåŠ›å¾Œã®ã‚¯ãƒ­ãƒƒãƒ—ã‚µã‚¤ã‚º
 
 	assert(NoPaddingInputWidth % crop_w == 0);
 	assert(NoPaddingInputHeight % crop_h == 0);
@@ -704,7 +704,7 @@ Waifu2x::eWaifu2xError cNet::ReconstructImage(const bool UseTTA, const int crop_
 		const int input_block_plane_size = input_block_width * input_block_height * mInputPlane;
 		const int output_block_plane_size = output_block_width * output_block_height * mInputPlane;
 
-		// ‰æ‘œ‚Í(Á”ïƒƒ‚ƒŠ‚Ì“s‡ã)block_size*block_size‚É•ª‚¯‚ÄÄ\’z‚·‚é
+		// ç”»åƒã¯(æ¶ˆè²»ãƒ¡ãƒ¢ãƒªã®éƒ½åˆä¸Š)block_size*block_sizeã«åˆ†ã‘ã¦å†æ§‹ç¯‰ã™ã‚‹
 		for (int num = 0; num < BlockNum; num += batch_size)
 		{
 			const int processNum = (BlockNum - num) >= batch_size ? batch_size : BlockNum - num;
@@ -724,7 +724,7 @@ Waifu2x::eWaifu2xError cNet::ReconstructImage(const bool UseTTA, const int crop_
 
 				cv::Mat someimg = inMat(cv::Rect(w, h, input_block_width, input_block_height));
 
-				// ‰æ‘œ‚ğ’¼—ñ‚É•ÏŠ·
+				// ç”»åƒã‚’ç›´åˆ—ã«å¤‰æ›
 				{
 					float *fptr = input_blob->mutable_cpu_data() + (input_block_plane_size * n);
 					const float *uptr = (const float *)someimg.data;
@@ -766,7 +766,7 @@ Waifu2x::eWaifu2xError cNet::ReconstructImage(const bool UseTTA, const int crop_
 
 			assert(input_blob->count() == input_block_plane_size * processNum);
 
-			// ŒvZ
+			// è¨ˆç®—
 			auto out = mNet->Forward();
 
 			auto b = out[0];
@@ -794,7 +794,7 @@ Waifu2x::eWaifu2xError cNet::ReconstructImage(const bool UseTTA, const int crop_
 
 				const auto Line = outim.step1();
 
-				// Œ‹‰Ê‚ğo—Í‰æ‘œ‚ÉƒRƒs[
+				// çµæœã‚’å‡ºåŠ›ç”»åƒã«ã‚³ãƒ”ãƒ¼
 				if (outim.channels() == 1)
 				{
 					for (int i = 0; i < output_crop_block_height; i++)
@@ -849,7 +849,7 @@ Waifu2x::eWaifu2xError cNet::ReconstructImage(const bool UseTTA, const int crop_
 		return Waifu2x::eWaifu2xError_FailedProcessCaffe;
 	}
 
-	// ’l‚ğ0`1‚ÉƒNƒŠƒbƒsƒ“ƒO
+	// å€¤ã‚’0ã€œ1ã«ã‚¯ãƒªãƒƒãƒ”ãƒ³ã‚°
 	cv::threshold(outim, outim, 1.0, 1.0, cv::THRESH_TRUNC);
 	cv::threshold(outim, outim, 0.0, 0.0, cv::THRESH_TOZERO);
 
