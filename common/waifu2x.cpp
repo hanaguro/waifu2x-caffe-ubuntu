@@ -610,6 +610,11 @@ Waifu2x::eWaifu2xError Waifu2x::Init(const eWaifu2xModelType mode, const int noi
 					if (cudaGetDeviceProperties(&prop, mGPUNo) == cudaSuccess)
 					{
 						std::string conv_filename(prop.name);
+#if !defined(_WIN32)
+						// デバイスの名前を表示
+						printf(prop.name);
+						printf("\n");
+#endif
 						conv_filename += " conv ";
 
 						std::string deconv_filename(prop.name);
